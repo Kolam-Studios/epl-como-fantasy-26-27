@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Projector Board — Card Grid (wireframe)</title>
+<style>
+  :root{
+    --ink:#111;
+    --line:#333;
+    --line-soft:#999;
+    --paper:#fff;
+    --grey-1:#f2f2f2;
+    --grey-2:#e2e2e2;
+    --grey-3:#cfcfcf;
+    --grey-dim:#a8a8a8;
+    --accent:#000;            /* greyscale by default */
+    --alert:#d23c1f;          /* the ONE restrained accent — active lot / blocked marks */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    width:1920px;height:1080px;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  .board{
+    width:1920px;height:1080px;
+    display:grid;
+    grid-template-rows:248px 1fr 92px;
+    padding:24px 28px;
+    gap:18px;
+  }
+
+  /* ---------- HERO : current lot ---------- */
+  .hero{
+    border:4px solid var(--ink);
+    display:grid;
+    grid-template-columns:330px 1fr 360px;
+    align-items:stretch;
+    position:relative;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;inset:0;
+    border:6px solid var(--alert);
+    margin:-10px;
+    pointer-events:none;
+  }
+  .hero-tag{
+    border-right:3px solid var(--line);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 28px;
+    background:var(--grey-1);
+  }
+  .hero-tag .lbl{
+    font-size:26px;letter-spacing:4px;font-weight:700;color:var(--line);
+  }
+  .hero-tag .live{
+    margin-top:14px;
+    font-size:30px;font-weight:800;letter-spacing:2px;
+    color:var(--alert);
+    display:flex;align-items:center;gap:14px;
+  }
+  .hero-tag .dot{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--alert);display:inline-block;
+  }
+  .hero-main{
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 40px;
+  }
+  .hero-name{
+    font-size:132px;line-height:1;font-weight:800;letter-spacing:-2px;
+  }
+  .hero-meta{
+    margin-top:18px;
+    font-size:38px;font-weight:600;color:var(--line);
+    display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  }
+  .chip{
+    border:3px solid var(--line);
+    padding:4px 18px;font-size:32px;font-weight:700;
+  }
+  .hero-side{
+    border-left:3px solid var(--line);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 30px;background:var(--grey-1);
+  }
+  .hero-side .row{font-size:30px;font-weight:600;color:var(--line);margin:6px 0;}
+  .hero-side .big{font-size:64px;font-weight:800;color:var(--ink);letter-spacing:-1px;}
+  .hero-side .sub{font-size:24px;color:var(--line-soft);font-weight:600;}
+
+  /* ---------- MANAGER CARD GRID ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:1fr 1fr;
+    gap:16px;
+  }
+  .card{
+    border:3px solid var(--line);
+    padding:18px 22px 16px;
+    display:flex;flex-direction:column;
+    position:relative;
+    background:var(--paper);
+  }
+  .card .top{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--grey-3);padding-bottom:10px;
+  }
+  .card .mgr{font-size:46px;font-weight:800;letter-spacing:1px;}
+  .card .state-pill{
+    font-size:20px;font-weight:800;letter-spacing:2px;
+    border:2px solid var(--line);padding:3px 12px;color:var(--line);
+  }
+
+  /* headline max-bid number */
+  .maxbid{
+    margin:14px 0 10px;
+  }
+  .maxbid .cap{font-size:22px;font-weight:700;letter-spacing:2px;color:var(--line-soft);}
+  .maxbid .val{font-size:84px;line-height:.92;font-weight:800;letter-spacing:-2px;}
+
+  /* budget + slots footer of card */
+  .card .stats{
+    margin-top:auto;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+  }
+  .budget .cap{font-size:20px;font-weight:700;letter-spacing:2px;color:var(--line-soft);}
+  .budget .val{font-size:40px;font-weight:800;}
+
+  .pips{display:flex;gap:14px;}
+  .pos{display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .pos .plabel{font-size:20px;font-weight:800;color:var(--line);}
+  .pips-row{display:flex;gap:4px;}
+  .pip{
+    width:14px;height:14px;border:2px solid var(--line);
+    background:var(--paper);
+  }
+  .pip.full{background:var(--ink);}
+  /* highlight the current lot's position column */
+  .pos.lotpos .plabel{color:var(--alert);}
+  .pos.lotpos .pip{border-color:var(--alert);}
+  .pos.lotpos .pip.full{background:var(--alert);}
+
+  /* ---- card states ---- */
+  .card.normal .maxbid .val{color:var(--ink);}
+
+  .card.full{
+    background:var(--grey-2);
+    border-color:var(--line-soft);
+    color:var(--grey-dim);
+  }
+  .card.full .mgr,.card.full .maxbid .val,.card.full .budget .val{color:var(--grey-dim);}
+  .card.full .pip.full{background:var(--grey-dim);border-color:var(--grey-dim);}
+  .card.full .pip{border-color:var(--grey-dim);}
+
+  .card.blocked{
+    background:var(--grey-1);
+    border-color:var(--alert);
+  }
+  .card.blocked .maxbid .val{color:var(--alert);}
+
+  /* big strike banner for excluded cards */
+  .exclude{
+    position:absolute;top:18px;right:22px;
+    font-size:26px;font-weight:800;letter-spacing:3px;
+    border:3px solid;padding:4px 14px;
+  }
+  .card.full .exclude{color:var(--grey-dim);border-color:var(--grey-dim);}
+  .card.blocked .exclude{color:var(--alert);border-color:var(--alert);}
+
+  /* dash placeholder for excluded max bid */
+  .dash{font-size:84px;font-weight:800;line-height:.92;}
+
+  /* ---------- FOOTER ribbons ---------- */
+  .footer{
+    display:grid;grid-template-columns:1fr 560px;gap:18px;
+  }
+  .ribbon{
+    border:3px solid var(--line);
+    display:flex;align-items:center;
+    padding:0 24px;background:var(--grey-1);
+    overflow:hidden;
+  }
+  .ribbon .cap{
+    font-size:22px;font-weight:800;letter-spacing:3px;color:var(--line-soft);
+    margin-right:22px;white-space:nowrap;
+  }
+  .ribbon .body{
+    font-size:30px;font-weight:700;color:var(--ink);white-space:nowrap;
+  }
+  .ribbon .sep{color:var(--line-soft);padding:0 12px;}
+</style>
+</head>
+<body>
+<div class="board">
+
+  <!-- ============ HERO : ON THE BLOCK ============ -->
+  <div class="hero">
+    <div class="hero-tag">
+      <div class="lbl">ON THE BLOCK</div>
+      <div class="live"><span class="dot"></span>LIVE LOT</div>
+    </div>
+    <div class="hero-main">
+      <div class="hero-name">HAALAND</div>
+      <div class="hero-meta">
+        <span class="chip">FWD</span>
+        <span class="chip">MCI</span>
+        <span>Tier 1</span>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="row">FPL PRICE</div>
+      <div class="big">£14.0</div>
+      <div class="sub">Position lot: FWD</div>
+    </div>
+  </div>
+
+  <!-- ============ MANAGER CARD GRID (7) ============ -->
+  <div class="grid">
+
+    <!-- M1 normal -->
+    <div class="card normal">
+      <div class="top">
+        <div class="mgr">M1</div>
+        <div class="state-pill">BIDDING</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="val">£452</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£455</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 normal -->
+    <div class="card normal">
+      <div class="top">
+        <div class="mgr">M2</div>
+        <div class="state-pill">BIDDING</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="val">£978</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£980</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M3 SQUAD FULL -->
+    <div class="card full">
+      <div class="exclude">SQUAD FULL</div>
+      <div class="top">
+        <div class="mgr">M3</div>
+        <div class="state-pill">COMPLETE</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="dash">—</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£12</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M4 normal -->
+    <div class="card normal">
+      <div class="top">
+        <div class="mgr">M4</div>
+        <div class="state-pill">BIDDING</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="val">£298</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£305</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M5 normal (high) -->
+    <div class="card normal">
+      <div class="top">
+        <div class="mgr">M5</div>
+        <div class="state-pill">BIDDING</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="val">£1,207</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£1,210</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M6 POSITION-BLOCKED -->
+    <div class="card blocked">
+      <div class="exclude">FWD FULL</div>
+      <div class="top">
+        <div class="mgr">M6</div>
+        <div class="state-pill">CAN'T BID FWD</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="dash">—</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£60</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M7 normal -->
+    <div class="card normal">
+      <div class="top">
+        <div class="mgr">M7</div>
+        <div class="state-pill">BIDDING</div>
+      </div>
+      <div class="maxbid">
+        <div class="cap">MAX BID — THIS LOT</div>
+        <div class="val">£726</div>
+      </div>
+      <div class="stats">
+        <div class="budget"><div class="cap">REMAINING</div><div class="val">£730</div></div>
+        <div class="pips">
+          <div class="pos"><div class="plabel">G</div><div class="pips-row"><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos"><div class="plabel">D</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span></div></div>
+          <div class="pos"><div class="plabel">M</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+          <div class="pos lotpos"><div class="plabel">F</div><div class="pips-row"><span class="pip full"></span><span class="pip full"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- legend card (8th cell) -->
+    <div class="card" style="background:var(--grey-1);border-style:dashed;">
+      <div class="top" style="border-bottom-color:var(--line-soft);">
+        <div class="mgr" style="font-size:26px;letter-spacing:2px;color:var(--line);">LEGEND</div>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:var(--line);line-height:1.9;margin-top:10px;">
+        <div><span class="pip full" style="display:inline-block;vertical-align:middle;"></span> slot filled &nbsp;
+             <span class="pip" style="display:inline-block;vertical-align:middle;"></span> open</div>
+        <div style="margin-top:8px;color:var(--alert);font-weight:800;">F column = current lot position</div>
+        <div style="margin-top:8px;">— &nbsp;= cannot bid this lot</div>
+        <div style="margin-top:8px;">Dimmed card = full / blocked</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ FOOTER RIBBONS ============ -->
+  <div class="footer">
+    <div class="ribbon">
+      <span class="cap">RECENTLY SOLD</span>
+      <span class="body">
+        ISAK &rarr; M5 £800 <span class="sep">·</span>
+        SALAH &rarr; M2 £1,000 <span class="sep">·</span>
+        PALMER &rarr; M2 £525 <span class="sep">·</span>
+        GABRIEL &rarr; M1 £90
+      </span>
+    </div>
+    <div class="ribbon">
+      <span class="cap">POOL LEFT</span>
+      <span class="body">GK 18 <span class="sep">·</span> DEF 92 <span class="sep">·</span> MID 130 <span class="sep">·</span> FWD 41</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

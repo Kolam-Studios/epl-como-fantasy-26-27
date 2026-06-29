@@ -1,0 +1,27 @@
+{
+  "season": "26/27",
+  "sport": "epl",
+  "managers": [
+    "Manager 1",
+    "Manager 2",
+    "Manager 3",
+    "Manager 4",
+    "Manager 5",
+    "Manager 6",
+    "Manager 7"
+  ],
+  "budget": 2000,
+  "squad": { "GK": 2, "DEF": 5, "MID": 5, "FWD": 3 },
+  "bidFloor": 1,
+  "increment": null,
+  "multipick": false,
+  "rebidRounds": 3,
+  "scoringSource": "fpl",
+  "_notes": {
+    "managers": "PUBLIC REPO: placeholder names only. Put the real 26/27 roster in a gitignored league.config.local.json (same shape) on the machine running the draft; it overrides this. Manager count derives from the array length.",
+    "squad": "Sums to 15. Position keys map to FPL element_type: GK=1, DEF=2, MID=3, FWD=4.",
+    "multipick": "false = exclusive ownership (one manager per player). EPL Como has no multipick (that was a WC FIFA-cap artifact).",
+    "rebidRounds": "Reserved for the deferred rebid feature; not used in v1.",
+    "scoringSource": "fpl = sum official FPL gameweek points per owned player."
+  }
+}
