@@ -8,7 +8,8 @@
     "Manager 4",
     "Manager 5",
     "Manager 6",
-    "Manager 7"
+    "Manager 7",
+    "Manager 8"
   ],
   "budget": 2000,
   "squad": { "GK": 2, "DEF": 5, "MID": 5, "FWD": 3 },

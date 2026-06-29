@@ -51,6 +51,27 @@
     font-size:30px;font-weight:500;color:#dcdcdc;letter-spacing:1px;
   }
   .lot .meta strong{color:#fff;font-weight:700}
+  /* player-data overlay: factual past history, glanceable */
+  .lotstats{
+    display:flex;align-items:stretch;
+    border:2px solid #555;
+    background:rgba(255,255,255,0.04);
+  }
+  .lotstats .cell{
+    display:flex;flex-direction:column;justify-content:center;
+    padding:6px 16px;
+    border-left:1px solid #555;
+    white-space:nowrap;
+  }
+  .lotstats .cell:first-child{border-left:none}
+  .lotstats .k{
+    font-size:12px;letter-spacing:2px;font-weight:700;color:#9a9a9a;
+    text-transform:uppercase;margin-bottom:3px;
+  }
+  .lotstats .v{font-size:24px;font-weight:700;color:#fff;line-height:1}
+  .lotstats .v .sub{font-size:15px;font-weight:500;color:#bdbdbd;margin-left:6px}
+  .lotstats .cell.hero{background:rgba(255,255,255,0.07)}
+
   .lot .right{
     margin-left:auto;text-align:right;
   }
@@ -176,6 +197,31 @@
     <span class="tag">ON THE BLOCK</span>
     <span class="name">HAALAND</span>
     <span class="meta"><strong>FWD</strong> · MCI · Tier 1 · FPL <strong>£14.0</strong></span>
+
+    <!-- player-data overlay: factual 25/26 history only — no projections -->
+    <div class="lotstats">
+      <div class="cell hero">
+        <span class="k">25/26 Pts</span>
+        <span class="v">224<span class="sub">FWD #3</span></span>
+      </div>
+      <div class="cell">
+        <span class="k">Starts</span>
+        <span class="v">33/38<span class="sub">2,910 min</span></span>
+      </div>
+      <div class="cell">
+        <span class="k">Goals</span>
+        <span class="v">27</span>
+      </div>
+      <div class="cell">
+        <span class="k">Assists</span>
+        <span class="v">5</span>
+      </div>
+      <div class="cell">
+        <span class="k">FPL Owned</span>
+        <span class="v">41%</span>
+      </div>
+    </div>
+
     <span class="right">
       <div class="lbl">MAX BID COLUMN SHOWS</div>
       <div class="val">most each manager can spend on this FWD</div>

@@ -75,6 +75,55 @@
   }
   .lot-meta .chip strong{font-weight:800;}
 
+  /* ---------- PLAYER-DATA OVERLAY (factual history, glanceable) ---------- */
+  .lot-stats{
+    border:2px solid var(--grey-3);
+    border-left:4px solid var(--accent);
+    border-radius:4px;
+    background:var(--grey-1);
+    padding:8px 16px 9px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    align-self:center;
+  }
+  .lot-stats .hdr{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--grey-5);
+    line-height:1.15;
+    white-space:nowrap;
+  }
+  .lot-stats .stat{
+    text-align:center;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .lot-stats .stat .v{
+    display:block;
+    font-size:30px;
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.5px;
+  }
+  .lot-stats .stat.lead .v{color:var(--accent);}
+  .lot-stats .stat .k{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--grey-4);
+    margin-top:4px;
+  }
+  .lot-stats .sep{
+    width:2px;
+    align-self:stretch;
+    background:var(--grey-3);
+  }
+
   /* ---------- BODY: leaderboard (main) + side rail ---------- */
   .body{
     flex:1 1 auto;
@@ -328,6 +377,19 @@
   <header class="lot">
     <span class="lot-flag">ON THE BLOCK</span>
     <span class="lot-name">HAALAND</span>
+
+    <div class="lot-stats">
+      <span class="hdr">Last season<br>25/26</span>
+      <div class="stat lead"><span class="v">224</span><span class="k">pts · FWD #3</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="v">33/38</span><span class="k">starts · 2,910′</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="v">27</span><span class="k">goals</span></div>
+      <div class="stat"><span class="v">5</span><span class="k">assists</span></div>
+      <div class="sep"></div>
+      <div class="stat"><span class="v">41%</span><span class="k">FPL owned</span></div>
+    </div>
+
     <div class="lot-meta">
       <span class="chip"><strong>FWD</strong></span>
       <span class="chip">MCI</span>

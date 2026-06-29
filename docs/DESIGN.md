@@ -28,8 +28,10 @@ All three render the same `/api/state` (polled ~2s); the commissioner panel addi
    repeat until every squad is full (15)
 ```
 
-- Nomination is **verbal**; the app doesn't track whose turn it is. The commissioner just sets the lot.
-- The commissioner is the **single writer** — no bid contention to resolve.
+- **No nomination phase.** Lot order is the pool sorted by **FPL price, most expensive first** (the long-standing Como convention), with an optional **randomise-within-tier** shuffle. The commissioner advances through the queue; search/jump to skip.
+- **Pause** is a first-class control: the commissioner can pause for trades, discussion, or a break, and every surface shows a clear PAUSED state.
+- The commissioner is the **single writer**, so there is no bid contention to resolve.
+- **Player-data overlay (easy/factual only):** the on-the-block player shows readily-available FPL history (club, position, price, last-season points, last-season starts/minutes). No AI start-prediction; pre-auction research stays with each bidder.
 
 ## The max-bid rule (the one bit of real logic)
 

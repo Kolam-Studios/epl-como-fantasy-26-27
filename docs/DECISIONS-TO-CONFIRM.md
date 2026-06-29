@@ -8,10 +8,19 @@
 - **Draft night:** in person → projector/big-screen board view **in v1**.
 - **Repo:** public GitHub `github.com/miloli-lab/epl-como-fantasy-26-27` (the miloli-lab pattern), **MIT**. Auth via `gh` (no PAT needed).
 - **Auction date:** **Aug 2, 2026** (~5 weeks runway from today).
+- **Managers:** **8** (Organiser: "8 is the right number"); roster still being recruited.
+- **Budget:** **$2000** (overrides Builder's "$200" note in the commissioner thread).
+- **Season:** runs on the **official Draft FPL site**, not our app — all three agree. Our app is auction-only.
+- **Nomination:** none. Lot order = FPL price descending (Como convention), with optional randomise-within-tier.
+- **Pause:** yes. Commissioner can pause for trades, discussion, or a break.
+- **Player-data overlay:** easy/factual FPL history on the lot (club, price, last-season points + starts). AI start-prediction is OUT (contested; research stays with bidders).
 
 ## Still open
 
-- **A1** — real 26/27 roster + count (kept out of the public repo; goes in local config). Confirm count + who.
+- **Bidding model (the crux):** commissioner-enters-sold-price (no per-player auth, simplest) vs live per-player **login bidding** (Builder's notes: 30s bid timer, 10s reset, login so you only bid as yourself). This one decision drives auth, timers, and whether we need realtime infra. UNDECIDED.
+- **Trades during the auction** (salary + players) — wanted by Organiser; net-new scope; depends partly on bidding model.
+- **Formation-bound bids + pitch view** — in Builder's notes; not yet designed.
+- **A1** — real 26/27 roster + names (count = 8 now set; kept out of the public repo, goes in local config). Confirm who.
 - **A6 / Future** — rebid count + rule, when that phase starts.
 - **C1** — when to freeze the player pool (FPL prices final in preseason).
 - **D1** — commissioner identity (who drives on the night).
