@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Como Fantasy 26/27 — Auction Board Wireframes</title>
+<style>
+  :root { --ink:#111; --mut:#666; --line:#ccc; --bg:#fafafa; --accent:#b08400; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+  .wrap { max-width:1100px; margin:0 auto; padding:40px 24px 80px; }
+  h1 { font-size:32px; margin:0 0 6px; letter-spacing:-.01em; }
+  .sub { color:var(--mut); margin:0 0 8px; }
+  .note { color:var(--mut); font-size:14px; border-left:3px solid var(--line); padding:8px 14px; margin:18px 0 32px; background:#fff; }
+  .grid { display:grid; gap:24px; grid-template-columns:1fr; }
+  .card { border:1px solid var(--line); background:#fff; border-radius:8px; overflow:hidden; }
+  .card a.shot { display:block; line-height:0; border-bottom:1px solid var(--line); }
+  .card img { width:100%; height:auto; display:block; }
+  .body { padding:16px 20px 20px; }
+  .body h2 { margin:0 0 4px; font-size:20px; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#fff; background:var(--accent); padding:2px 8px; border-radius:4px; vertical-align:middle; margin-left:8px; }
+  .body p { margin:6px 0 14px; color:#333; }
+  .open { display:inline-block; font-weight:600; text-decoration:none; color:var(--ink); border:1px solid var(--ink); padding:8px 16px; border-radius:6px; }
+  .open:hover { background:var(--ink); color:#fff; }
+  footer { margin-top:48px; color:var(--mut); font-size:13px; }
+  @media (min-width:760px){ .grid{ grid-template-columns:1fr 1fr; } .card.feature{ grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Como Fantasy 26/27 — Auction Board</h1>
+  <p class="sub">Projector / big-screen wireframes for the live in-person auction. Three layout options, same sample data.</p>
+  <div class="note">
+    Lo-fi greyscale, <strong>placeholder data</strong> (managers M1–M7, made-up prices). This is about layout and information hierarchy, not final look. v1 scope = the auction only; season runs on the official Draft FPL site. Click any board to open it full-screen — best viewed on a wide screen.
+  </div>
+
+  <div class="grid">
+    <div class="card feature">
+      <a class="shot" href="projector-leaderboard.html"><img src="shots/projector-leaderboard.png" alt="Leaderboard layout"></a>
+      <div class="body">
+        <h2>1 · Leaderboard <span class="tag">recommended</span></h2>
+        <p>Built around the live question: who can bid on this player, and how high? Managers ranked by max allowable bid; blocked / squad-full managers drop below the line. Includes the factual player-data strip (last-season points, starts).</p>
+        <a class="open" href="projector-leaderboard.html">Open board →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <a class="shot" href="projector-table.html"><img src="shots/projector-table.png" alt="Table layout"></a>
+      <div class="body">
+        <h2>2 · Table</h2>
+        <p>The spreadsheet heir — mirrors the Google Sheet we’ve always used. Everything on one grid with explicit GK/DEF/MID/FWD slot fill. Also has the player-data strip.</p>
+        <a class="open" href="projector-table.html">Open board →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <a class="shot" href="projector-cards.html"><img src="shots/projector-cards.png" alt="Card grid layout"></a>
+      <div class="body">
+        <h2>3 · Card grid</h2>
+        <p>Big hero lot up top, a card per manager with slot pips. Reads nicely but tight to fit 8 managers on one screen.</p>
+        <a class="open" href="projector-cards.html">Open board →</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Wireframes only — commissioner panel and manager-phone views still to come.
+    Source: <a href="https://github.com/miloli-git/epl-como-fantasy-26-27">github.com/miloli-git/epl-como-fantasy-26-27</a>
+  </footer>
+</div>
+</body>
+</html>
