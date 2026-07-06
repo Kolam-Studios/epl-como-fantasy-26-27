@@ -4,6 +4,8 @@ Self-hosted **live auction-draft** tool for the Como fantasy league. Config-driv
 
 > **v1 = the auction, in person, Aug 2 2026.** Season scoring is a later phase.
 
+**Status (2026-07-07):** spec phase. No app runtime yet; the work queue is the [GitHub issues](https://github.com/miloli-git/epl-como-fantasy-26-27/issues) (start at #9, the build plan). Agents: read `CLAUDE.md` first, including the human confirmation gates.
+
 ## What it is
 
 - **v1 — Live auction board.** Commissioner nominates a player and enters the winning manager + sold price. The room watches a live, read-only **projector/big-screen** board (current lot, who owns what, budget remaining, slots filled) that also serves to each manager's phone. Bidding is verbal in the room; the app is the system of record. Budget / roster-slot / exclusive-ownership validation on every sale, plus undo.
