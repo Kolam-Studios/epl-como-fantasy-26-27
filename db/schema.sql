@@ -138,6 +138,8 @@ create table if not exists audit_log (
 );
 
 -- Singleton row (id = 1); bump version on every write so clients poll cheaply.
+-- ALL auction mutations must go through withAuctionLock (lib/draft-core.mjs) -
+-- the FOR UPDATE on this singleton serialises writes.
 create table if not exists app_state (
   id                integer primary key check (id = 1),
   phase             integer not null default 1,
@@ -145,11 +147,17 @@ create table if not exists app_state (
   current_player_id integer,             -- on the block (null between lots)
   tv_view           text not null default 'block'
                     check (tv_view in ('block','reveal','squads','ledger','paused')),
+  reveal_until      timestamptz,         -- when tv_view='reveal': expiry instant set by
+                                         -- recordSale; NULL = persist until changed
+                                         -- (what the console set_tv override writes)
   nomination_turn   integer,             -- manager slot whose nomination it is (phase 2)
   lot_queue         jsonb,               -- shuffled order (player ids), phase 1
   pool_frozen       boolean not null default false,
   version           bigint not null default 1
 );
+
+-- Idempotent migration for DBs created before reveal_until existed.
+alter table app_state add column if not exists reveal_until timestamptz;
 
 create index if not exists sales_manager_idx on sales(manager_id);
 create index if not exists lot_events_player_idx on lot_events(player_id);
