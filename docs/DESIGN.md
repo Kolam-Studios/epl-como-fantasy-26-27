@@ -1,8 +1,8 @@
-# Product Design — Auction v1
+# Product Design - Auction v1
 
-> Status: DRAFT for review. Abbreviated design to lock requirements before build. Low-fi only — visual design comes at build time. Feeds `docs/PRD.md` acceptance criteria.
+> Status: DRAFT for review. Abbreviated design to lock requirements before build. Low-fi only - visual design comes at build time. Feeds `docs/PRD.md` acceptance criteria.
 >
-> **Visual design is now locked** — colors, type, and surface rules live in [`docs/VISUAL-DESIGN.md`](VISUAL-DESIGN.md), with a live sample at [`docs/wireframes/style-sketch.html`](wireframes/style-sketch.html).
+> **Visual design is now locked** - colors, type, and surface rules live in [`docs/VISUAL-DESIGN.md`](VISUAL-DESIGN.md), with a live sample at [`docs/wireframes/style-sketch.html`](wireframes/style-sketch.html).
 
 ## Surfaces (3, one responsive app, role by token)
 
@@ -44,12 +44,12 @@ openSlotThisPosition = squad[pos] - filled[m][pos]          // must be > 0 to bi
 emptySlotsElsewhere  = (squadSize - slotsFilled[m]) - 1      // reserve £1 each
 maxBid(m)            = openSlotThisPosition > 0
                          ? remaining[m] - max(0, emptySlotsElsewhere) * bidFloor
-                         : —                                  // blocked: no slot for this position
+                         : -                                  // blocked: no slot for this position
 ```
 
-So a manager with money but no empty GK slot **cannot** bid on a GK (shown as "—"). When a manager has one slot left, their max = full remaining. This is computed server-side in `/api/state` per manager for the current lot, and shown on every surface.
+So a manager with money but no empty GK slot **cannot** bid on a GK (shown as "-"). When a manager has one slot left, their max = full remaining. This is computed server-side in `/api/state` per manager for the current lot, and shown on every surface.
 
-## Validation (server, one transaction) — rejects a sale unless all hold
+## Validation (server, one transaction) - rejects a sale unless all hold
 
 1. Player exists and is **not already sold** (exclusive ownership).
 2. Winner has an **open slot for that position**.
@@ -75,7 +75,7 @@ So a manager with money but no empty GK slot **cannot** bid on a GK (shown as "�
 │ Manager   Rem    Slots(G/D/M/F)   MaxBid │ Manager   Rem ...  │
 │ M1       £455    1/4/3/2          £452    │ M5      £1,210 ... │
 │ M2       £980    2/5/4/2          £977    │ M6        £ 60 ... │
-│ M3       £ 12    2/5/5/3  FULL    —       │ M7       £730  ... │
+│ M3       £ 12    2/5/5/3  FULL    -       │ M7       £730  ... │
 │ M4       £305    1/3/2/1          £302    │                    │
 │──────────────────────────────────────────────────────────────│
 │ Recently sold:  ISAK→M5 £800 · SALAH→M2 £1,000 · ...          │
@@ -102,7 +102,7 @@ So a manager with money but no empty GK slot **cannot** bid on a GK (shown as "�
 ### Manager phone (read-only)
 ```
 ┌───────────────────────────┐
-│ MY TEAM — M5              │
+│ MY TEAM - M5              │
 │ Rem £1,210 · 11/15 slots  │
 │ Max bid (Haaland): £1,207 │
 │ GK ✓✓  DEF ✓✓✓✓✓          │
@@ -122,5 +122,5 @@ So a manager with money but no empty GK slot **cannot** bid on a GK (shown as "�
 
 ## Still open (build-time, not blocking)
 
-- Where "on the block" lives (DB row vs in-memory broadcast) — pick during build.
-- Visual design / branding — frontend-design skill at build.
+- Where "on the block" lives (DB row vs in-memory broadcast) - pick during build.
+- Visual design / branding - frontend-design skill at build.
