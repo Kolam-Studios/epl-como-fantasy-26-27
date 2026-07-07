@@ -1,10 +1,13 @@
-// Apply db/schema.sql, seed managers from league.config.json, and ensure the
-// app_state singleton row exists.
+// Apply db/schema.sql, seed managers from league.config.json (with the
+// gitignored league.config.local.json merged on top when present, so the real
+// roster seeds on the draft machine), and ensure the app_state singleton row
+// exists.
 // Usage: npm run db:setup
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
+import { buildConfig } from "../lib/config-core.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -17,7 +20,13 @@ if (!url) {
 
 const sql = postgres(url, { max: 1 });
 const schema = readFileSync(join(root, "db", "schema.sql"), "utf8");
-const config = JSON.parse(readFileSync(join(root, "league.config.json"), "utf8"));
+const base = JSON.parse(readFileSync(join(root, "league.config.json"), "utf8"));
+const localPath = join(root, "league.config.local.json");
+const local = existsSync(localPath)
+  ? JSON.parse(readFileSync(localPath, "utf8"))
+  : undefined;
+// Merge + validate; local (real roster) wins. Never print the names.
+const config = buildConfig(base, local);
 
 try {
   await sql.unsafe(schema);
