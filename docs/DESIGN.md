@@ -1,6 +1,8 @@
 # Product Design — Auction v1
 
 > Status: DRAFT for review. Abbreviated design to lock requirements before build. Low-fi only — visual design comes at build time. Feeds `docs/PRD.md` acceptance criteria.
+>
+> **Visual design is now locked** — colors, type, and surface rules live in [`docs/VISUAL-DESIGN.md`](VISUAL-DESIGN.md), with a live sample at [`docs/wireframes/style-sketch.html`](wireframes/style-sketch.html).
 
 ## Surfaces (3, one responsive app, role by token)
 

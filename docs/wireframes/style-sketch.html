@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Como 26/27 — Visual Style Sketch (Eggshell × Stripe)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #FDFCFC;         /* eggshell — never pure white */
+    --card: #FFFFFF;
+    --ink: #0A0A0A;
+    --muted: #767676;
+    --hair: #E5E5E5;
+    --orange: #F36F1C;
+    --green: #10B978;
+    --red: #DF4A32;
+    --amber: #D99A1B;
+    /* layered shadows — blue-grey tint, crisp not blobby */
+    --shadow-sm: 0 1px 2px rgba(50,50,93,0.06), 0 1px 1px rgba(0,0,0,0.05);
+    --shadow-md: 0 2px 5px -1px rgba(50,50,93,0.12), 0 1px 3px -1px rgba(0,0,0,0.10);
+    --shadow-lg: 0 13px 27px -5px rgba(50,50,93,0.14), 0 8px 16px -8px rgba(0,0,0,0.18);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: Inter, sans-serif; font-size: 16px; line-height: 1.6; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 56px 28px 90px; }
+  h1, h2 { font-family: 'Hanken Grotesk', sans-serif; font-weight: 300; letter-spacing: -0.03em; margin: 0; }
+  h1 { font-size: clamp(44px, 6vw, 68px); line-height: 1.02; }
+  h2 { font-size: 30px; margin-bottom: 18px; }
+  .eyebrow { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .eyebrow .dot { color: var(--orange); }
+  .kw { color: var(--orange); }
+  section { margin-top: 64px; }
+  .note { color: var(--muted); font-size: 14px; max-width: 64ch; }
+
+  .card { background: var(--card); border-radius: 8px; box-shadow: var(--shadow-md); padding: 22px 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+  .card h3 { font-size: 15.5px; font-weight: 600; margin: 0 0 6px; }
+  .card p { font-size: 14px; color: var(--muted); margin: 0; }
+  .card .k { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--orange); display: block; margin-bottom: 8px; }
+
+  .stats { display: flex; margin-top: 34px; background: var(--card); border-radius: 8px; box-shadow: var(--shadow-md); overflow: hidden; }
+  .stat { flex: 1; padding: 18px 24px 14px; }
+  .stat + .stat { border-left: 1px solid var(--hair); }
+  .stat b { display: block; font-family: 'Hanken Grotesk', sans-serif; font-weight: 300; font-size: 34px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn { font-family: Inter, sans-serif; font-weight: 600; font-size: 14.5px; border: none; border-radius: 999px; padding: 12px 24px; cursor: pointer; }
+  .btn.primary { background: var(--ink); color: #fff; box-shadow: var(--shadow-md); }
+  .btn.quiet { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
+  .btn.ghost { background: transparent; color: var(--muted); box-shadow: none; }
+
+  .badge { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 5px 12px; font-size: 12.5px; font-weight: 600; }
+  .badge.live { background: rgba(16,185,120,0.12); color: #0B7A50; }
+  .badge.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .badge.tier { background: rgba(10,10,10,0.06); color: var(--ink); }
+  .badge.up { background: rgba(16,185,120,0.12); color: #0B7A50; }
+  .badge.down { background: rgba(223,74,50,0.10); color: #B2371F; }
+  .badge.flat { background: rgba(217,154,27,0.13); color: #96690A; }
+
+  .ledger { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .ledger th { text-align: right; font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 12px 14px; border-bottom: 1px solid var(--hair); }
+  .ledger th:first-child { text-align: left; }
+  .ledger td { padding: 12px 14px; text-align: right; border-bottom: 1px solid #F0F0EF; }
+  .ledger tr:last-child td { border-bottom: none; }
+  .ledger td:first-child { text-align: left; font-weight: 500; }
+
+  .tv { border-radius: 12px; margin-top: 30px; padding: 34px 38px; background: #16181A; color: #FFFFFF; box-shadow: var(--shadow-lg); }
+  .tv .eyebrow { color: #9A9A94; }
+  .tvname { font-family: 'Hanken Grotesk', sans-serif; font-weight: 300; font-size: 58px; letter-spacing: -0.02em; line-height: 1; }
+  .tvname .to { color: #83837D; }
+  .tvcells { display: flex; gap: 1px; margin-top: 28px; background: rgba(255,255,255,0.14); border-radius: 10px; overflow: hidden; }
+  .tvcell { flex: 1; min-width: 200px; padding: 22px 26px; background: #1D1F22; }
+  .tvcell span { display: block; font-size: 11.5px; letter-spacing: 0.09em; text-transform: uppercase; color: #9A9A94; font-weight: 600; margin-bottom: 6px; }
+  .tvcell b { font-family: 'Hanken Grotesk', sans-serif; font-weight: 300; font-size: 64px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .tvcell b.seal { color: var(--orange); }
+  .tvverdict { margin-top: 26px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .tvverdict .vb { background: rgba(223,74,50,0.16); color: #FF9D8F; border-radius: 999px; padding: 8px 18px; font-weight: 600; font-size: 17px; }
+  .tvverdict small { color: #C9C5BD; font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow"><span class="dot">●</span> Como 26/27 · visual style sketch · eggshell × stripe</div>
+  <h1>Como leaves<br>the <span class="kw">spreadsheet</span>.</h1>
+  <p class="note" style="margin-top:18px;">The approved visual direction (see <code>docs/VISUAL-DESIGN.md</code> for tokens and rules). Eggshell ground, light-300 Hanken Grotesk display, Inter UI, orange as punctuation — carried on Stripe mechanics: white cards on crisp layered blue-grey shadows, 8px radius, tinted pill badges, dense hairline tables. No accent bars, no borders on cards, no neumorphism. The TV board drops all subtlety: near-black, oversized light numerals, hairline-separated cells. Placeholder data (managers M1–M7, made-up prices).</p>
+
+  <div class="stats">
+    <div class="stat"><b>$3,000</b><span>per manager</span></div>
+    <div class="stat"><b>8</b><span>managers</span></div>
+    <div class="stat"><b>15</b><span>players</span></div>
+    <div class="stat"><b>Aug 2</b><span>the auction</span></div>
+  </div>
+
+  <section>
+    <div class="eyebrow">Cards — white on layered shadow, 8px radius</div>
+    <h2>Every rule enforced at entry</h2>
+    <div class="grid">
+      <div class="card"><span class="k">Rule</span><h3>Exclusive ownership</h3><p>One manager per player — a database constraint, not an honour system.</p></div>
+      <div class="card"><span class="k">Rule</span><h3>Live max bid</h3><p>Computed live for all eight, shown on every screen; the console refuses any sale above it.</p></div>
+      <div class="card"><span class="k">Rule</span><h3>Sealed Claude values</h3><p>Generated draft morning, hidden — auto-revealed the moment each hammer falls.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Controls + badges — tinted fills are the one place color lands</div>
+    <div class="row">
+      <button class="btn primary">🔨 Record sale</button>
+      <button class="btn quiet">No bid — to phase two</button>
+      <button class="btn ghost">↩ Undo last</button>
+      <span class="badge live">Board live · 8 devices</span>
+      <span class="badge tier">Tier 1 · opens $50</span>
+      <span class="badge up">+150</span>
+      <span class="badge down">−240</span>
+      <span class="badge flat">−5</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Data — micro-headers, hairline rows, tabular numerals</div>
+    <div class="card" style="padding: 4px 10px;">
+      <table class="ledger">
+        <thead><tr><th>Player</th><th>Owner</th><th>Paid</th><th>Claude</th><th>Δ</th></tr></thead>
+        <tbody>
+          <tr><td>M.Salah</td><td>M1</td><td>$1,000</td><td>$1,150</td><td><span class="badge up">+150</span></td></tr>
+          <tr><td>Haaland</td><td>M1</td><td>$780</td><td>$540</td><td><span class="badge down">−240</span></td></tr>
+          <tr><td>Isak</td><td>M2</td><td>$800</td><td>$795</td><td><span class="badge flat">−5</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The TV — contrast first, readable from the couch</div>
+    <div class="tv">
+      <div class="eyebrow">Sold · lot 14</div>
+      <div class="tvname">HAALAND <span class="to">→ M1</span></div>
+      <div class="tvcells">
+        <div class="tvcell"><span>Price paid</span><b>$780</b></div>
+        <div class="tvcell"><span>Claude's sealed value</span><b class="seal">$540</b></div>
+      </div>
+      <div class="tvverdict"><span class="vb">OVERPAY · +$240 — 44% over</span><small>The group chat will never delete this.</small></div>
+    </div>
+  </section>
+
+  <p class="note" style="margin-top:60px;">Token summary: ground #FDFCFC · card #FFFFFF · ink #0A0A0A · muted #767676 · hairline #E5E5E5 · orange #F36F1C (punctuation + sealed values) · semantics green #10B978 / red #DF4A32 / amber #D99A1B as tinted badges · Hanken Grotesk 300 display, Inter 400/500/600 UI · shadows: sm 0 1px 2px rgba(50,50,93,.06); md 0 2px 5px -1px rgba(50,50,93,.12); lg 0 13px 27px -5px rgba(50,50,93,.14) · radius 8px cards, 12px TV frame, 999px pills · TV surface #16181A, cells #1D1F22 split by rgba(255,255,255,.14) hairlines, numerals Hanken 300 at 64px+. Full spec: <code>docs/VISUAL-DESIGN.md</code>.</p>
+
+</div>
+</body>
+</html>
