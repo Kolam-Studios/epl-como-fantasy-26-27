@@ -22,6 +22,7 @@
   "bidIncrement": null,
   "valueBadgeThreshold": 50,
   "scarcityThreshold": 2,
+  "scarcityTiers": [1, 2],
   "pollMs": 2000,
   "revealMs": 8000,
   "_notes": {
@@ -32,6 +33,7 @@
     "bidIncrement": "null = voice bidding, no enforced increment in v1. Set a number to enforce a minimum raise.",
     "valueBadgeThreshold": "Post-sale badge: flag a sale as value/overpay when hammer price differs from the sealed AI valuation by at least this many dollars.",
     "scarcityThreshold": "Board alert when the remaining pool for a position drops to this many players per unfilled slot.",
+    "scarcityTiers": "Which tier numbers raise scarcity alerts on the board. Default [1, 2]: only premium stock shouts; add lower tiers here to alert on them too.",
     "pollMs": "How often every surface re-fetches /api/state, in milliseconds.",
     "revealMs": "How long the TV reveal (sealed valuation at the hammer) stays on screen, in milliseconds.",
     "removed": "bidFloor/increment/multipick/rebidRounds/scoringSource were dropped from this shape. Rebid rounds are deferred to v2; season scoring lives on the official FPL Draft site, not here."

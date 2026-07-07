@@ -12,7 +12,9 @@
     "db:setup": "node scripts/db-setup.mjs",
     "ingest": "node scripts/ingest-fpl.mjs",
     "ingest:stats": "node scripts/ingest-fpl.mjs --stats-only",
-    "assets": "node scripts/cache-assets.mjs"
+    "assets": "node scripts/cache-assets.mjs",
+    "test:derive": "node scripts/test-derive.mjs",
+    "test:state": "node --env-file=.env scripts/test-state.mjs"
   },
   "dependencies": {
     "next": "^15.1.0",
