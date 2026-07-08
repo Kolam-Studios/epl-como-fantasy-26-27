@@ -52,6 +52,8 @@ npm run dev                         # http://localhost:3000
 | `docs/DATA-MODEL.md` | schema rationale, config seam, API surface |
 | `docs/VISUAL-DESIGN.md` | locked visual design |
 | `docs/HANDOFF.md` · `docs/PORTING.md` | build-vs-port split and the Vercel port walk |
+| `docs/DEPLOYMENT.md` | approved path to production - platforms, accounts, credentials, night-of resilience |
+| `docs/TEST-PLAN.md` | acceptance-criteria verification matrix + test cases for build agents |
 | `docs/DECISIONS-TO-CONFIRM.md` | decision log (all resolved) |
 | `docs/PRIOR-ART.md` | external scan of comparable tools |
 | `CLAUDE.md` | context for AI coding agents working this repo |

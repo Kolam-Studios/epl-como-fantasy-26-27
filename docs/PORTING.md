@@ -18,7 +18,7 @@
 3. In Vercel project settings, set env: `DATABASE_URL`, `COMMISSIONER_TOKEN`.
 4. Locally against the hosted DB: `npm install` → `npm run db:setup` → `npm run ingest`.
 5. `vercel deploy`. Expect zero source changes.
-6. Set the real roster: Vercel can't read the gitignored `league.config.local.json`, so put real manager names in an env-driven override or upload the local config as a Vercel env/secret (document whichever you choose here once decided).
+6. Set the real roster: Vercel can't read the gitignored `league.config.local.json`. **Decided (8 Jul 2026):** the config loader reads a `LEAGUE_CONFIG_LOCAL` env var containing the same JSON, applied with the same deep merge, with the local file taking precedence when both exist. Paste the file's contents into that Vercel env var. (Loader change tracked as an issue until it lands.)
 7. **Verify in a browser:** open the deployed URL, record a sale on the commissioner panel, confirm it appears on the board view within ~2s.
 
 ## If a code change was required
