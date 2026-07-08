@@ -42,6 +42,13 @@
   --btn-ink-text: #141715;
   --shadow-sm: none;
   --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.35);
+  /* body sets `color: var(--ink)` resolved at :root (the LIGHT ink), and that
+     computed value inherits down. Re-set color + ground HERE so the console
+     subtree is light-on-charcoal by default; unstyled text (lot name, up-next)
+     would otherwise inherit the light-theme ink and vanish on the dark ground. */
+  color: var(--ink);
+  background: var(--ground);
+  min-height: 100vh;
 }
 
 * { box-sizing: border-box; }
@@ -390,10 +397,361 @@ footer { margin-top: 20px; color: var(--muted); font-size: 12px; }
 .b-top .facts { color: var(--muted); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
 .b-top .facts b { color: var(--ink); }
 
+/* ============================================================
+   SQUADS + LEDGER + PAUSED: alternate room-facing screens
+   (tv.set flips payload.tvView; app/page.tsx hands off to these).
+   Same 1600x900 canvas mechanics as the board, but their own
+   internal layout - a simple top bar plus one content area - so
+   they use flex, not the board's fixed 3-column grid.
+   ============================================================ */
+.board-canvas.squads,
+.board-canvas.ledger,
+.board-canvas.paused {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: none;
+  grid-template-rows: none;
+  background: var(--hair);
+  gap: 1px;
+}
+
+/* Shared top bar for squads/ledger (board's .b-top vibe, self-contained height
+   since these canvases are flex columns, not the board's fixed-row grid). */
+.tv-top {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 28px;
+  background: var(--card);
+}
+.tv-top .kick { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; font-size: 15px; color: var(--bronze); }
+.tv-top .spacer { flex: 1; }
+.tv-top .meta { color: var(--muted); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* SQUADS: 4x2 grid of manager cells */
+.sqgrid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 1px; min-height: 0; }
+.sq { background: var(--card); padding: 16px 19px; display: flex; flex-direction: column; min-height: 0; }
+.sq .h { display: flex; justify-content: space-between; align-items: baseline; }
+.sq .nm { font-family: var(--font-display); font-weight: 300; font-size: 27px; letter-spacing: -0.02em; }
+.sq .fin { font-size: 12.5px; color: var(--muted); }
+.sq .val { display: flex; align-items: center; gap: 10px; margin: 8px 0 7px; padding-bottom: 9px; border-bottom: 1px solid var(--hair); }
+.sq .val .lbl { font-family: var(--font-display); font-weight: 700; font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.sq .val .v { font-family: var(--font-display); font-weight: 300; font-size: 29px; letter-spacing: -0.02em; }
+.sq .val .v.sealed { font-size: 20px; }
+.sq .val .pill { margin-left: auto; font-size: 15px; padding: 3px 13px; }
+.sq .pr { display: grid; grid-template-columns: 12px 1fr 34px 56px; gap: 9px; padding: 5px 0; font-size: 15.5px; border-bottom: 1px solid var(--hair); align-items: center; }
+.sq .pr:last-of-type { border-bottom: none; }
+.sq .cdot { width: 9px; height: 9px; border-radius: 50%; }
+.sq .tn { font-family: var(--font-display); font-weight: 700; font-size: 10.5px; color: var(--muted); }
+.sq .p { text-align: right; font-weight: 600; }
+.sq .more { font-size: 13px; color: var(--muted); padding-top: 7px; margin-top: auto; }
+
+/* LEDGER: one scrollable table */
+.ledcell { flex: 1; background: var(--card); padding: 6px 30px 0; min-height: 0; overflow-y: auto; }
+table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
+.led th { font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 14px 14px 10px; border-bottom: 1px solid var(--hair); position: sticky; top: 0; background: var(--card); }
+.led th:nth-child(1), .led th:nth-child(2) { text-align: left; }
+.led td { padding: 6.5px 14px; border-bottom: 1px solid var(--hair); text-align: right; white-space: nowrap; }
+.led td:nth-child(1), .led td:nth-child(2) { text-align: left; }
+.led .pcell { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+.led .thumb { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--chip); }
+.led .cdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+.led .sealed { color: var(--bronze); font-weight: 600; font-size: 15px; }
+.led .nob { color: var(--vb); font-weight: 700; font-size: 13.5px; letter-spacing: 0.06em; }
+.led .mut { color: var(--muted); }
+
+/* PAUSED: a quiet holding screen while the room is between phases */
+.board-canvas.paused { align-items: center; justify-content: center; background: var(--card); }
+.pv-title { font-family: var(--font-display); font-weight: 300; font-size: 120px; letter-spacing: -0.03em; color: var(--ink); }
+.pv-sub { color: var(--muted); font-size: 20px; margin-top: 10px; }
+
 /* Phone-responsive: the war-room pages must read on a phone */
 @media (max-width: 640px) {
   .screen { padding: 16px 14px 40px; }
   .screen h1 { font-size: 30px; }
   .mgr { min-width: calc(50% - 5px); flex: 1 1 calc(50% - 5px); }
   .screen section { padding: 14px 15px; }
+}
+
+/* ============================================================
+   CONSOLE (charcoal mockup fidelity): the operator's interactive
+   screen - a normal full-height responsive page (not the TV's
+   scaled 1600x900 canvas). Everything below is scoped under
+   .console (see the dark token override above). Two working
+   columns on wide screens, one on narrow/phone; a top status
+   strip and a bottom TV bar bookend the grid.
+   ============================================================ */
+
+/* Small brass eyebrow instead of the light pages' big display h1 - the
+   console needs the vertical space for the working columns, not a title. */
+.console .con-h1 {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--bronze);
+  margin: 0 0 10px;
+}
+
+.con-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 0 0 12px;
+}
+.con-status label { display: inline-flex; align-items: center; gap: 6px; }
+
+/* "BOARD LIVE" pill: purely a status readout, distinct from poll-status
+   (which is the plain-text fallback the smoke test greps for). */
+.con-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.con-live .con-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  display: inline-block;
+}
+.con-live.on { color: #7FE0B4; }
+.con-live.on .con-dot { background: #7FE0B4; box-shadow: 0 0 6px rgba(127, 224, 180, 0.7); }
+.con-live.off { color: #F0997F; }
+.con-live.off .con-dot { background: #F0997F; }
+
+/* Two-column grid: 1.35fr / 1fr, columns separated by a 1px hairline gap
+   (background peeking through), collapsing to one column on narrow screens. */
+.con-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1px;
+  background: var(--hair);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 0 16px;
+  box-shadow: var(--shadow-md);
+}
+.con-col {
+  background: #1B1E1C;
+  padding: 26px 28px;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+.con-colh {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--bronze);
+  margin: 0 0 16px;
+}
+.con-progh { margin-top: 22px; }
+
+/* Current-lot header line: big display name, neutral tier chip, meta */
+.con-lotline {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 18px;
+}
+.con-lotline .nm {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+}
+.con-lotmeta { color: var(--muted); font-size: 13.5px; letter-spacing: 0.02em; }
+
+/* The 8 manager buttons: 4-col grid, brass ring on the selected winner */
+.con-mgr8 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.con-mgrbtn {
+  border-radius: 8px;
+  padding: 14px 8px 12px;
+  text-align: center;
+  border: 1px solid #343936;
+  background: #232725;
+  box-shadow: none;
+  margin: 0;
+}
+.con-mgrbtn.sel {
+  border-color: var(--bronze);
+  background: #2C2717;
+  box-shadow: 0 0 0 2.5px var(--bronze) inset;
+}
+.con-mgrbtn.off { opacity: 0.42; }
+.con-mgrbtn .s {
+  display: block;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.09em;
+}
+.con-mgrbtn .x { display: block; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+/* Big hammer-price input + verdict pill */
+.con-pricerow { display: flex; align-items: center; gap: 18px; margin-top: 22px; }
+.con-priceinput {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 48px;
+  letter-spacing: -0.02em;
+  padding: 6px 4px;
+  border: none;
+  border-bottom: 1px solid var(--hair);
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+}
+.con-priceinput:focus { outline: none; border-bottom-color: var(--bronze); }
+
+.con-verdpill {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 18px;
+  border-radius: var(--pill);
+  background: var(--chip);
+  margin: 14px 0 0;
+}
+.console .verdict.ok.con-verdpill { background: rgba(127, 224, 180, 0.14); }
+.console .verdict.bad.con-verdpill { background: rgba(240, 153, 127, 0.14); }
+.console .verdict.idle.con-verdpill { background: var(--chip); }
+
+/* Action row + generic console button skin (quiet/primary/blue) */
+.con-btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.con-btn {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--pill);
+  padding: 10px 18px;
+  border: none;
+  cursor: pointer;
+  margin: 0;
+}
+.con-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.con-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.con-btn.primary { background: var(--bronze); color: #1B1E1C; }
+.con-btn.quiet { background: #232725; border: 1px solid #343936; color: var(--ink); }
+.con-btn.blue { background: transparent; color: #A5CBE8; box-shadow: inset 0 0 0 2px #74AFDC; }
+
+/* Up-next queue rows (phase-1) */
+.con-qlist { list-style: none; margin: 0; padding: 0; }
+.con-qrow { padding: 7px 0; border-bottom: 1px solid var(--hair); }
+.con-qrow:last-child { border-bottom: none; }
+
+/* Night progress readout */
+.con-prog {
+  background: #232725;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ---- trade-entry form (Part 2, issue #24) ---- */
+.con-trade {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hair);
+}
+.con-traderow { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.con-tradecol { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.con-tlabel {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.con-treason { margin-top: 14px; }
+.con-plist {
+  background: #1B1E1C;
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 44px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+.con-ptoggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 2px;
+  font-size: 13.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ink);
+}
+.con-tempty { color: var(--muted); font-size: 13px; margin: 4px 2px; }
+
+/* Bottom TV bar: pill options, active view highlighted */
+.con-tvbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 14px 22px;
+  margin: 0 0 16px;
+}
+.con-tvlabel {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.con-tvopt {
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--pill);
+  padding: 8px 18px;
+  border: none;
+  background: #232725;
+  color: var(--muted);
+  cursor: pointer;
+  margin: 0;
+}
+.con-tvopt.on { background: var(--ink); color: #1B1E1C; }
+.con-tvopt:hover:not(.on) { filter: brightness(1.15); }
+
+/* Narrow screens (and the phone the console must also work on): one column */
+@media (max-width: 900px) {
+  .con-grid { grid-template-columns: 1fr; }
+  .con-mgr8 { grid-template-columns: repeat(2, 1fr); }
+  .con-traderow { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .con-col { padding: 18px 16px; }
+  .con-lotline .nm { font-size: 30px; }
+  .con-priceinput { font-size: 34px; }
 }

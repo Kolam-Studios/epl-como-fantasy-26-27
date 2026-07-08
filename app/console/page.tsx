@@ -1,7 +1,13 @@
 "use client";
 
-// The console - the auctioneer's screen, the only writer. SKELETON:
-// deliberately unstyled, plain HTML, minimal inline layout.
+// The console - the auctioneer's screen, the only writer. CHARCOAL skin
+// (globals.css .console scope) laid out to match the approved mockup: a top
+// status strip, a two-column working area (current lot + sale entry on the
+// left, up-next/nominations + night progress on the right), and a bottom TV
+// bar. Restyle only - every data-testid, write() call, and piece of logic
+// below is unchanged from the skeleton; see the HARD CONSTRAINT note in the
+// build ticket. Part 2 adds the trade-entry form (the engine already existed
+// via POST /api/trade; this file only adds the missing UI for it).
 //
 // Token: read from localStorage key 'commissionerToken', settable via the
 // input at the top; sent as `Authorization: Bearer <token>` on every write.
@@ -26,6 +32,11 @@ const TV_VIEWS = ["block", "reveal", "squads", "ledger", "paused"] as const;
 
 function money(n: number | null | undefined): string {
   return n == null ? "?" : `$${n.toLocaleString()}`;
+}
+
+/** Digits-only text input -> integer, treating empty as null (price) or 0 (cash). */
+function digitsOnly(text: string): string {
+  return text.replace(/[^0-9]/g, "");
 }
 
 /** Poll /api/state; setInterval + AbortController cleanup; version-gated. */
@@ -145,6 +156,22 @@ export default function Console() {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // ---- trade-entry form (Part 2) ----
+  const [tradeOpen, setTradeOpen] = useState(false);
+  const [tradeManagerA, setTradeManagerA] = useState("");
+  const [tradeManagerB, setTradeManagerB] = useState("");
+  const [tradePlayersAToB, setTradePlayersAToB] = useState<number[]>([]);
+  const [tradePlayersBToA, setTradePlayersBToA] = useState<number[]>([]);
+  const [tradeCashAText, setTradeCashAText] = useState("");
+  const [tradeCashBText, setTradeCashBText] = useState("");
+  const [tradeReason, setTradeReason] = useState("");
+  // #24: a cash-only trade has no natural idempotency key, so a fast double
+  // click on Submit could otherwise fire two identical POSTs before React
+  // re-renders the disabled button. A ref is synchronous (unlike state), so
+  // checking + setting it at the very top of the handler blocks the second
+  // click before anything else runs, not just once the busy state lands.
+  const submittingRef = useRef(false);
+
   useEffect(() => {
     setToken(window.localStorage.getItem("commissionerToken") ?? "");
   }, []);
@@ -161,9 +188,32 @@ export default function Console() {
 
   const managers = payload?.managers ?? [];
   const winner = managers.find((m) => m.slot === winnerSlot) ?? null;
-  const priceDigits = priceText.replace(/[^0-9]/g, "");
+  const priceDigits = digitsOnly(priceText);
   const price = priceDigits ? parseInt(priceDigits, 10) : null;
   const verdict = checkVerdict(lot, winner, price);
+
+  // A manager picked on one side of a trade must never linger as an option
+  // (or an owned-player list) on the other side.
+  useEffect(() => {
+    setTradePlayersAToB([]);
+  }, [tradeManagerA]);
+  useEffect(() => {
+    setTradePlayersBToA([]);
+  }, [tradeManagerB]);
+
+  const tradeMgrA = managers.find((m) => String(m.id) === tradeManagerA) ?? null;
+  const tradeMgrB = managers.find((m) => String(m.id) === tradeManagerB) ?? null;
+  const tradeCashA = tradeCashAText ? parseInt(digitsOnly(tradeCashAText), 10) || 0 : 0;
+  const tradeCashB = tradeCashBText ? parseInt(digitsOnly(tradeCashBText), 10) || 0 : 0;
+  const tradeHasMovement =
+    tradePlayersAToB.length > 0 ||
+    tradePlayersBToA.length > 0 ||
+    tradeCashA > 0 ||
+    tradeCashB > 0;
+  // Client-side, only guard against obviously-empty submits; the server is
+  // the real defence (ownership, budgets, quotas, squad size).
+  const tradeValid =
+    tradeManagerA !== "" && tradeManagerB !== "" && tradeManagerA !== tradeManagerB && tradeHasMovement;
 
   function saveToken(v: string) {
     setToken(v);
@@ -224,6 +274,47 @@ export default function Console() {
     }
   }
 
+  function toggleTradePlayer(side: "a" | "b", playerId: number) {
+    const setFn = side === "a" ? setTradePlayersAToB : setTradePlayersBToA;
+    setFn((prev) =>
+      prev.includes(playerId) ? prev.filter((id) => id !== playerId) : [...prev, playerId],
+    );
+  }
+
+  function resetTradeForm() {
+    setTradeManagerA("");
+    setTradeManagerB("");
+    setTradePlayersAToB([]);
+    setTradePlayersBToA([]);
+    setTradeCashAText("");
+    setTradeCashBText("");
+    setTradeReason("");
+    setTradeOpen(false);
+  }
+
+  async function submitTrade() {
+    // See the #24 comment on submittingRef above: this check + set must be
+    // the very first thing the handler does, before any await.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    try {
+      const { ok } = await write("/api/trade", "POST", {
+        managerA: parseInt(tradeManagerA, 10),
+        managerB: parseInt(tradeManagerB, 10),
+        playersAToB: tradePlayersAToB,
+        playersBToA: tradePlayersBToA,
+        cashAToB: tradeCashA,
+        cashBToA: tradeCashB,
+        reason: tradeReason.trim() || undefined,
+      });
+      // Reset on success so a late, accidental second click has nothing
+      // left to resubmit.
+      if (ok) resetTradeForm();
+    } finally {
+      submittingRef.current = false;
+    }
+  }
+
   // Night progress, derived from what the payload carries (managers[].squad
   // is the FULL owned list, not just recent sales). No-bid count is NOT
   // derivable from the payload (needs lot_events) - omitted.
@@ -244,10 +335,12 @@ export default function Console() {
 
   return (
     <main data-testid="console-page" className="screen console">
-      <h1>Console</h1>
-      <p>
+      <h1 className="con-h1">Console</h1>
+
+      {/* ---- top status strip ---- */}
+      <div className="con-status">
         <label>
-          commissioner token{" "}
+          token{" "}
           <input
             data-testid="token-input"
             type="password"
@@ -255,196 +348,349 @@ export default function Console() {
             onChange={(e) => saveToken(e.target.value)}
           />
         </label>
-        {" | "}
         <span data-testid="phase">phase {payload?.phase ?? "?"}</span>
-        {" | "}
         <span data-testid="paused">{payload?.paused ? "PAUSED" : "running"}</span>
-        {" | "}
-        <span data-testid="poll-status">
-          {connected ? "connected" : "connection lost - retrying"}
-        </span>
-      </p>
-      <p data-testid="write-status" className="write-status">
-        {status || "no writes yet"}
-      </p>
-
-      {/* ---- current lot + sale entry ---- */}
-      <section>
-        <h2>Current lot</h2>
-        {lot ? (
-          <p>
-            <strong data-testid="lot-name">{lot.name}</strong>
-            {" | tier "}
-            {lot.tier ?? "?"} | {lot.position} | {lot.teamShort ?? "?"} | opens{" "}
-            {money(lot.openBid)}
-          </p>
-        ) : (
-          <p data-testid="lot-empty">No lot on the block.</p>
-        )}
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {managers.map((m) => {
-            const size = m.squad.length + m.openSlots;
-            // Only squad-complete ineligibility is derivable client-side;
-            // position-full ("FWD full") needs quotas the payload lacks.
-            const disabled = m.squadComplete;
-            const label = m.squadComplete
-              ? `${m.short} ${m.squad.length}/${size}`
-              : `${m.short} max ${money(m.maxBid)}`;
-            return (
-              <button
-                key={m.slot}
-                data-testid={`manager-btn-${m.slot}`}
-                disabled={disabled}
-                onClick={() => setWinnerSlot(m.slot)}
-              >
-                {winnerSlot === m.slot ? `[${label}]` : label}
-              </button>
-            );
-          })}
-        </div>
-
-        <p>
-          <label>
-            hammer price{" "}
-            <input
-              data-testid="price-input"
-              inputMode="numeric"
-              value={priceText}
-              onChange={(e) => setPriceText(e.target.value)}
-            />
-          </label>
-        </p>
-        <p data-testid="verdict" className={`verdict ${verdict.kind}`}>{verdict.msg}</p>
-        <button
-          data-testid="record-sale"
-          className="primary"
-          disabled={verdict.kind !== "ok" || !lot || busy}
-          onClick={recordSale}
-        >
-          Record sale
-        </button>
-      </section>
-
-      {/* ---- actions ---- */}
-      <section>
-        <h2>Actions</h2>
-        <button
-          data-testid="no-bid"
-          disabled={busy}
-          onClick={() => write("/api/lot", "POST", { action: "no_bid" })}
-        >
-          No bid - to phase two
-        </button>{" "}
-        <button
-          data-testid="undo-sale"
-          disabled={busy || !payload?.recentSales?.length}
-          title={
-            payload?.recentSales?.length ? undefined : "No sale visible to undo yet"
-          }
-          onClick={() => {
-            // Double-submit guard: pin the undo to the newest sale this
-            // console has SEEN (recentSales is newest-first). The server
-            // rejects with stale_undo if the last sale changed meanwhile.
-            // The button is disabled until a sale is visible, so there is
-            // never an unguarded DELETE.
-            const expectedSaleId = payload?.recentSales?.[0]?.saleId;
-            if (expectedSaleId == null) return;
-            if (window.confirm("Undo the last sale?")) {
-              write("/api/draft/latest", "DELETE", { expectedSaleId });
-            }
-          }}
-        >
-          Undo last sale
-        </button>{" "}
         <button
           data-testid="pause-toggle"
+          className="con-btn quiet"
           onClick={() =>
             write("/api/lot", "POST", { action: payload?.paused ? "resume" : "pause" })
           }
         >
           {payload?.paused ? "Resume" : "Pause"}
-        </button>{" "}
-        <button
-          data-testid="end-phase-one"
-          onClick={() => {
-            if (window.confirm("End phase one and open nominations?")) {
-              write("/api/lot", "POST", { action: "end_phase_one" });
-            }
-          }}
-        >
-          End phase one
         </button>
-      </section>
+        <span data-testid="poll-status">
+          {connected ? "connected" : "connection lost - retrying"}
+        </span>
+        <span className={`con-live ${connected ? "on" : "off"}`}>
+          <i className="con-dot" />
+          {connected ? "BOARD LIVE" : "OFFLINE"}
+        </span>
+      </div>
+      <p data-testid="write-status" className="write-status">
+        {status || "no writes yet"}
+      </p>
 
-      {/* ---- up next / nominations ---- */}
-      <section>
-        <h2>Up next</h2>
-        {payload?.phase === 2 ? (
-          <div data-testid="up-next">
-            <p data-testid="nomination-turn">
-              Nomination: Manager {payload.nominationTurn ?? "?"}
-              {nominatorShort ? ` (${nominatorShort})` : ""}
-            </p>
-            <p>
-              <label>
-                player id{" "}
-                <input
-                  data-testid="nominate-player-id"
-                  inputMode="numeric"
-                  value={nomineeText}
-                  onChange={(e) => setNomineeText(e.target.value)}
-                />
-              </label>{" "}
-              <button
-                data-testid="nominate"
-                disabled={!/^[0-9]+$/.test(nomineeText) || payload.nominationTurn == null}
-                onClick={() =>
-                  write("/api/lot", "POST", {
-                    action: "nominate",
-                    playerId: parseInt(nomineeText, 10),
-                    managerSlot: payload.nominationTurn,
-                  })
-                }
-              >
-                Nominate
-              </button>
-            </p>
+      <div className="con-grid">
+        {/* ---- LEFT: current lot + sale entry ---- */}
+        <section className="con-col">
+          <h2 className="con-colh">Current lot - record the sale</h2>
+          {lot ? (
+            <div className="con-lotline">
+              <span className="nm" data-testid="lot-name">
+                {lot.name}
+              </span>
+              <span className="chip">
+                T{lot.tier ?? "?"} - opens {money(lot.openBid)}
+              </span>
+              <span className="con-lotmeta">
+                {lot.position} - {lot.teamShort ?? "?"}
+              </span>
+            </div>
+          ) : (
+            <p data-testid="lot-empty">No lot on the block.</p>
+          )}
+
+          <div className="con-mgr8">
+            {managers.map((m) => {
+              const size = m.squad.length + m.openSlots;
+              // Only squad-complete ineligibility is derivable client-side;
+              // position-full ("FWD full") needs quotas the payload lacks.
+              const disabled = m.squadComplete;
+              const selected = winnerSlot === m.slot;
+              const sub = m.squadComplete
+                ? `${m.squad.length}/${size}`
+                : `max ${money(m.maxBid)}`;
+              return (
+                <button
+                  key={m.slot}
+                  data-testid={`manager-btn-${m.slot}`}
+                  disabled={disabled}
+                  className={`con-mgrbtn${selected ? " sel" : ""}${disabled ? " off" : ""}`}
+                  onClick={() => setWinnerSlot(m.slot)}
+                >
+                  <span className="s">{m.short}</span>
+                  <span className="x">{sub}</span>
+                </button>
+              );
+            })}
           </div>
-        ) : (
-          <ol data-testid="up-next">
-            {(payload?.upNext ?? []).length === 0 && <li>queue empty</li>}
-            {(payload?.upNext ?? []).map((u) => (
-              <li key={u.id}>
-                {u.name} (T{u.tier ?? "?"})
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
 
-      {/* ---- TV bar ---- */}
-      <section>
-        <h2>TV</h2>
+          <div className="con-pricerow">
+            <input
+              data-testid="price-input"
+              className="con-priceinput"
+              inputMode="numeric"
+              placeholder="hammer price"
+              value={priceText}
+              onChange={(e) => setPriceText(e.target.value)}
+            />
+          </div>
+          <p data-testid="verdict" className={`con-verdpill verdict ${verdict.kind}`}>
+            {verdict.msg}
+          </p>
+
+          <div className="con-btnrow">
+            <button
+              data-testid="record-sale"
+              className="con-btn primary"
+              disabled={verdict.kind !== "ok" || !lot || busy}
+              onClick={recordSale}
+            >
+              Record sale
+            </button>
+            <button
+              data-testid="no-bid"
+              className="con-btn quiet"
+              disabled={busy}
+              onClick={() => write("/api/lot", "POST", { action: "no_bid" })}
+            >
+              No bid
+            </button>
+            <button
+              data-testid="trade-open"
+              className="con-btn quiet"
+              onClick={() => (tradeOpen ? resetTradeForm() : setTradeOpen(true))}
+            >
+              {tradeOpen ? "Close trade form" : "Enter a trade"}
+            </button>
+            <button
+              data-testid="undo-sale"
+              className="con-btn quiet"
+              disabled={busy || !payload?.recentSales?.length}
+              title={
+                payload?.recentSales?.length ? undefined : "No sale visible to undo yet"
+              }
+              onClick={() => {
+                // Double-submit guard: pin the undo to the newest sale this
+                // console has SEEN (recentSales is newest-first). The server
+                // rejects with stale_undo if the last sale changed meanwhile.
+                // The button is disabled until a sale is visible, so there is
+                // never an unguarded DELETE.
+                const expectedSaleId = payload?.recentSales?.[0]?.saleId;
+                if (expectedSaleId == null) return;
+                if (window.confirm("Undo the last sale?")) {
+                  write("/api/draft/latest", "DELETE", { expectedSaleId });
+                }
+              }}
+            >
+              Undo last
+            </button>
+          </div>
+
+          {/* ---- trade-entry form: revealed by "Enter a trade" (#24 guard
+              on submit lives in submitTrade above) ---- */}
+          {tradeOpen && (
+            <div className="con-trade">
+              <div className="con-traderow">
+                <div className="con-tradecol">
+                  <label className="con-tlabel">
+                    Manager A
+                    <select
+                      data-testid="trade-manager-a"
+                      value={tradeManagerA}
+                      onChange={(e) => setTradeManagerA(e.target.value)}
+                    >
+                      <option value="">Select...</option>
+                      {managers
+                        .filter((m) => String(m.id) !== tradeManagerB)
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.short}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <div className="con-plist">
+                    {!tradeMgrA ? (
+                      <p className="con-tempty">Select a manager.</p>
+                    ) : tradeMgrA.squad.length === 0 ? (
+                      <p className="con-tempty">No owned players.</p>
+                    ) : (
+                      tradeMgrA.squad.map((p) => (
+                        <label key={p.playerId} className="con-ptoggle">
+                          <input
+                            type="checkbox"
+                            data-testid={`trade-player-${p.playerId}`}
+                            checked={tradePlayersAToB.includes(p.playerId)}
+                            onChange={() => toggleTradePlayer("a", p.playerId)}
+                          />
+                          {p.name} ({p.position}) {money(p.price)}
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  <label className="con-tlabel">
+                    Cash A to B
+                    <input
+                      data-testid="trade-cash-a"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={tradeCashAText}
+                      onChange={(e) => setTradeCashAText(e.target.value)}
+                    />
+                  </label>
+                </div>
+
+                <div className="con-tradecol">
+                  <label className="con-tlabel">
+                    Manager B
+                    <select
+                      data-testid="trade-manager-b"
+                      value={tradeManagerB}
+                      onChange={(e) => setTradeManagerB(e.target.value)}
+                    >
+                      <option value="">Select...</option>
+                      {managers
+                        .filter((m) => String(m.id) !== tradeManagerA)
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.short}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <div className="con-plist">
+                    {!tradeMgrB ? (
+                      <p className="con-tempty">Select a manager.</p>
+                    ) : tradeMgrB.squad.length === 0 ? (
+                      <p className="con-tempty">No owned players.</p>
+                    ) : (
+                      tradeMgrB.squad.map((p) => (
+                        <label key={p.playerId} className="con-ptoggle">
+                          <input
+                            type="checkbox"
+                            data-testid={`trade-player-${p.playerId}`}
+                            checked={tradePlayersBToA.includes(p.playerId)}
+                            onChange={() => toggleTradePlayer("b", p.playerId)}
+                          />
+                          {p.name} ({p.position}) {money(p.price)}
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  <label className="con-tlabel">
+                    Cash B to A
+                    <input
+                      data-testid="trade-cash-b"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={tradeCashBText}
+                      onChange={(e) => setTradeCashBText(e.target.value)}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <label className="con-tlabel con-treason">
+                Reason (optional)
+                <input
+                  data-testid="trade-reason"
+                  type="text"
+                  value={tradeReason}
+                  onChange={(e) => setTradeReason(e.target.value)}
+                />
+              </label>
+
+              <div className="con-btnrow">
+                <button
+                  data-testid="trade-submit"
+                  className="con-btn primary"
+                  disabled={!tradeValid || busy}
+                  onClick={submitTrade}
+                >
+                  Submit trade
+                </button>
+                <button className="con-btn quiet" disabled={busy} onClick={resetTradeForm}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* ---- RIGHT: up next / nominations + night progress ---- */}
+        <section className="con-col">
+          <h2 className="con-colh">Up next</h2>
+          {payload?.phase === 2 ? (
+            <div data-testid="up-next">
+              <p data-testid="nomination-turn">
+                Nomination: Manager {payload.nominationTurn ?? "?"}
+                {nominatorShort ? ` (${nominatorShort})` : ""}
+              </p>
+              <p>
+                <label>
+                  player id{" "}
+                  <input
+                    data-testid="nominate-player-id"
+                    inputMode="numeric"
+                    value={nomineeText}
+                    onChange={(e) => setNomineeText(e.target.value)}
+                  />
+                </label>{" "}
+                <button
+                  data-testid="nominate"
+                  className="con-btn primary"
+                  disabled={!/^[0-9]+$/.test(nomineeText) || payload.nominationTurn == null}
+                  onClick={() =>
+                    write("/api/lot", "POST", {
+                      action: "nominate",
+                      playerId: parseInt(nomineeText, 10),
+                      managerSlot: payload.nominationTurn,
+                    })
+                  }
+                >
+                  Nominate
+                </button>
+              </p>
+            </div>
+          ) : (
+            <ol data-testid="up-next" className="con-qlist">
+              {(payload?.upNext ?? []).length === 0 && <li className="con-qrow">queue empty</li>}
+              {(payload?.upNext ?? []).map((u) => (
+                <li key={u.id} className="con-qrow">
+                  {u.name} (T{u.tier ?? "?"})
+                </li>
+              ))}
+            </ol>
+          )}
+
+          <h2 className="con-colh con-progh">Night progress</h2>
+          <p data-testid="night-progress" className="con-prog">
+            sold {soldCount} | spend {money(totalSpend)} | tier-1 left {tier1Remaining} |
+            squads complete {squadsComplete}/{managers.length || "?"}
+          </p>
+
+          <div className="con-btnrow">
+            <button
+              data-testid="end-phase-one"
+              className="con-btn blue"
+              onClick={() => {
+                if (window.confirm("End phase one and open nominations?")) {
+                  write("/api/lot", "POST", { action: "end_phase_one" });
+                }
+              }}
+            >
+              End phase one
+            </button>
+          </div>
+        </section>
+      </div>
+
+      {/* ---- bottom TV bar ---- */}
+      <div className="con-tvbar">
+        <span className="con-tvlabel">TV is showing</span>
         {TV_VIEWS.map((v) => (
           <button
             key={v}
             data-testid={`tv-${v}`}
+            className={`con-tvopt${payload?.tvView === v ? " on" : ""}`}
             onClick={() => write("/api/lot", "POST", { action: "set_tv", view: v })}
           >
-            {payload?.tvView === v ? `[${v}]` : v}
+            {v}
           </button>
         ))}
-      </section>
-
-      {/* ---- night progress ---- */}
-      <section>
-        <h2>Night progress</h2>
-        <p data-testid="night-progress">
-          sold {soldCount} | spend {money(totalSpend)} | tier-1 left {tier1Remaining} |
-          squads complete {squadsComplete}/{managers.length || "?"}
-        </p>
-      </section>
+      </div>
 
       <footer>
         <small data-testid="version">v{payload?.version ?? "-"}</small>

@@ -13,6 +13,8 @@ import type { CSSProperties } from "react";
 import type { StatePayload } from "@/lib/state";
 import clubColors from "@/lib/club-colors.json";
 import { washForClub } from "@/lib/club-core.mjs";
+import SquadsView from "@/components/SquadsView";
+import LedgerView from "@/components/LedgerView";
 
 const POSITIONS = ["GK", "DEF", "MID", "FWD"] as const;
 type Pos = (typeof POSITIONS)[number];
@@ -27,7 +29,7 @@ const TIER_SHADE: Record<number, string> = { 1: "#3a3f38", 2: "#5c635a", 3: "#87
 function money(n: number | null | undefined): string {
   return n == null ? "?" : `$${n.toLocaleString()}`;
 }
-/** 3-letter uppercase manager code (Milo -> MIL), matching the mockup strip. */
+/** 3-letter uppercase manager code (Manager 1 -> MAN), matching the mockup strip. */
 function abbr(s: string | null | undefined): string {
   return (s ?? "?").slice(0, 3).toUpperCase();
 }
@@ -145,6 +147,34 @@ function verdictPill(v: string | null): string {
 export default function Board() {
   const { payload, connected } = usePolledState();
   const { ref, scale } = useBoardScale();
+
+  // Alternate room-facing screens hand off entirely once tv.set flips tvView -
+  // squads/ledger run their own poll + scale, so they need nothing from here.
+  // This must come after both hooks above (rules-of-hooks: no early return
+  // before every hook on this component has run).
+  if (payload?.tvView === "squads") return <SquadsView />;
+  if (payload?.tvView === "ledger") return <LedgerView />;
+  if (payload?.tvView === "paused") {
+    const readyP = scale > 0;
+    return (
+      <div data-testid="board-page">
+        <div
+          className={`board-frame${readyP ? "" : " loading"}`}
+          ref={ref}
+          style={{ ["--board-scale" as string]: scale, height: readyP ? 900 * scale : undefined } as CSSProperties}
+        >
+          {readyP ? (
+            <div className="board-canvas paused">
+              <div className="pv-title">Paused</div>
+              <div className="pv-sub">The room will resume shortly</div>
+            </div>
+          ) : (
+            <div>loading the room...</div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const lot = payload?.currentLot ?? null;
   const lotPos: Pos | null = (lot?.position as Pos | undefined) ?? null;
