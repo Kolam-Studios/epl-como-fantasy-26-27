@@ -6,6 +6,8 @@
 // endpoint - /api/state - with a different payload shape).
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import clubColors from "@/lib/club-colors.json";
 import { washForClub } from "@/lib/club-core.mjs";
 import type { PlayersPayload } from "@/lib/players";
@@ -152,4 +154,37 @@ export function crestErr(e: React.SyntheticEvent<HTMLImageElement>) {
     return;
   }
   el.style.display = "none";
+}
+
+// ---- Phone bottom navigation (#45) -----------------------------------------
+// Persistent tab bar for the three room-facing phone screens (board, squads,
+// ledger). The console is a separate operator surface and is not part of
+// this nav. Rendered only inside the phone sub-components, so it never
+// reaches the TV canvas path.
+
+const PHONE_TABS = [
+  { href: "/", label: "Board" },
+  { href: "/squads", label: "Squads" },
+  { href: "/ledger", label: "Ledger" },
+] as const;
+
+export function PhoneNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="ph-nav" aria-label="Room navigation">
+      {PHONE_TABS.map((t) => {
+        const active = pathname === t.href;
+        return (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={`ph-navtab${active ? " active" : ""}`}
+            aria-current={active ? "page" : undefined}
+          >
+            {t.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 }

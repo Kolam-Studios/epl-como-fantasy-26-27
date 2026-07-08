@@ -15,7 +15,7 @@ import clubColors from "@/lib/club-colors.json";
 import { washForClub } from "@/lib/club-core.mjs";
 import SquadsView from "@/components/SquadsView";
 import LedgerView from "@/components/LedgerView";
-import { useIsPhone } from "@/components/tv-common";
+import { PhoneNav, useIsPhone } from "@/components/tv-common";
 
 const POSITIONS = ["GK", "DEF", "MID", "FWD"] as const;
 type Pos = (typeof POSITIONS)[number];
@@ -209,6 +209,7 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
           </div>
         </>
       )}
+      <PhoneNav />
     </div>
   );
 }

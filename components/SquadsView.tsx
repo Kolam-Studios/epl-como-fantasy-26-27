@@ -8,7 +8,7 @@
 import type { CSSProperties } from "react";
 import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersManager, PlayersPayload } from "@/lib/players";
-import { abbr, clubDot, money, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
+import { PhoneNav, abbr, clubDot, money, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
 const POSITIONS: Position[] = ["GK", "DEF", "MID", "FWD"];
 const POS_LETTER: Record<Position, string> = { GK: "G", DEF: "D", MID: "M", FWD: "F" };
@@ -139,6 +139,7 @@ function PhoneSquads({ payload, connected }: { payload: PlayersPayload | null; c
           ))}
         </div>
       )}
+      <PhoneNav />
     </div>
   );
 }

@@ -6,9 +6,11 @@
 // rows (the API already withholds them structurally - this view just never
 // reads `value` for a row where sold is false).
 
+import { useState } from "react";
 import type { CSSProperties } from "react";
+import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersPayload } from "@/lib/players";
-import { PL, SILHOUETTE, abbr, clubDot, money, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
+import { PL, PhoneNav, SILHOUETTE, abbr, clubDot, money, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
 /** Sold rows first (highest paid first), then unsold rows by last season's points. */
 function ledgerSort(a: PlayerRow, b: PlayerRow): number {
@@ -74,7 +76,69 @@ function Row({ p }: { p: PlayerRow }) {
 
 // ---- Phone layout (plain reflowing HTML, not the scaled TV canvas) --------
 
+type PhoneSortKey = "paid" | "points" | "value" | "tier";
+type PhonePosFilter = "ALL" | Position;
+
+const PHONE_SORT_OPTIONS: { key: PhoneSortKey; label: string }[] = [
+  { key: "paid", label: "Paid" },
+  { key: "points", label: "Points" },
+  { key: "value", label: "Value" },
+  { key: "tier", label: "Tier" },
+];
+const PHONE_SORT_HEADMETA: Record<PhoneSortKey, string> = {
+  paid: "SORTED BY PAID",
+  points: "SORTED BY POINTS",
+  value: "SORTED BY VALUE",
+  tier: "SORTED BY TIER",
+};
+const PHONE_POSITION_OPTIONS: PhonePosFilter[] = ["ALL", "GK", "DEF", "MID", "FWD"];
+
+/** Paid desc / Points desc / Value desc (nulls last, sealed rows included) / Tier asc. */
+function phoneLedgerSort(rows: PlayerRow[], sortKey: PhoneSortKey): PlayerRow[] {
+  const out = [...rows];
+  switch (sortKey) {
+    case "points":
+      out.sort((a, b) => (b.pts ?? -Infinity) - (a.pts ?? -Infinity));
+      break;
+    case "value":
+      out.sort((a, b) => {
+        if (a.value == null && b.value == null) return 0;
+        if (a.value == null) return 1;
+        if (b.value == null) return -1;
+        return b.value - a.value;
+      });
+      break;
+    case "tier":
+      out.sort((a, b) => (a.tier ?? 99) - (b.tier ?? 99));
+      break;
+    case "paid":
+    default:
+      out.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+  }
+  return out;
+}
+
 function PhoneLedgerRow({ p }: { p: PlayerRow }) {
+  if (!p.sold) {
+    // Unsold: sealed - no value/verdict/delta and no paid price, ever. Lighter
+    // treatment (opacity, see .ph-ledger-unsold) plus an explicit "unsold" tag.
+    return (
+      <div className="ph-card ph-ledger-row ph-ledger-unsold" data-testid={`ph-ledger-${p.id}`}>
+        <div className="ph-ledger-left">
+          <span className="ph-dot" style={{ background: clubDot(p.teamShort) }} />
+          <div style={{ minWidth: 0 }}>
+            <div className="ph-ledger-name">{p.name ?? "?"}</div>
+            <div className="ph-sub">
+              {p.teamShort ?? "?"} / {p.position} / T{p.tier ?? "?"}
+            </div>
+          </div>
+        </div>
+        <div className="ph-ledger-right">
+          <span className="ph-sub">unsold</span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="ph-card ph-ledger-row" data-testid={`ph-ledger-${p.id}`}>
       <div className="ph-ledger-left">
@@ -100,14 +164,66 @@ function PhoneLedgerRow({ p }: { p: PlayerRow }) {
 }
 
 function PhoneLedger({ payload, connected }: { payload: PlayersPayload | null; connected: boolean }) {
+  const [sortKey, setSortKey] = useState<PhoneSortKey>("paid");
+  const [posFilter, setPosFilter] = useState<PhonePosFilter>("ALL");
+  const [showAll, setShowAll] = useState(false);
+
   const ready = payload !== null;
-  const rows = payload ? payload.players.filter((p) => p.sold).sort((a, b) => (b.price ?? 0) - (a.price ?? 0)) : [];
+  let rows = payload ? payload.players.filter((p) => showAll || p.sold) : [];
+  if (posFilter !== "ALL") rows = rows.filter((p) => p.position === posFilter);
+  rows = phoneLedgerSort(rows, sortKey);
 
   return (
     <div className="ph-screen" data-testid="ledger-page">
       <div className="ph-header">
         <span className="ph-eyebrow">THE LEDGER</span>
-        <span className="ph-headmeta">SORTED BY PAID</span>
+        <span className="ph-headmeta">{PHONE_SORT_HEADMETA[sortKey]}</span>
+      </div>
+      <div className="ph-ctrlwrap">
+        <div className="ph-ctrlgroup" role="group" aria-label="Sort ledger by">
+          {PHONE_SORT_OPTIONS.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              className={`ph-chipbtn${sortKey === o.key ? " active" : ""}`}
+              aria-pressed={sortKey === o.key}
+              onClick={() => setSortKey(o.key)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        <div className="ph-ctrlgroup" role="group" aria-label="Filter by position">
+          {PHONE_POSITION_OPTIONS.map((pos) => (
+            <button
+              key={pos}
+              type="button"
+              className={`ph-chipbtn${posFilter === pos ? " active" : ""}`}
+              aria-pressed={posFilter === pos}
+              onClick={() => setPosFilter(pos)}
+            >
+              {pos === "ALL" ? "All" : pos}
+            </button>
+          ))}
+        </div>
+        <div className="ph-ctrlgroup" role="group" aria-label="Sold or all players">
+          <button
+            type="button"
+            className={`ph-chipbtn${!showAll ? " active" : ""}`}
+            aria-pressed={!showAll}
+            onClick={() => setShowAll(false)}
+          >
+            Sold
+          </button>
+          <button
+            type="button"
+            className={`ph-chipbtn${showAll ? " active" : ""}`}
+            aria-pressed={showAll}
+            onClick={() => setShowAll(true)}
+          >
+            All
+          </button>
+        </div>
       </div>
       {!ready ? (
         <div className="ph-loading">{connected ? "connecting..." : "connection lost - retrying"}</div>
@@ -118,6 +234,7 @@ function PhoneLedger({ payload, connected }: { payload: PlayersPayload | null; c
           ))}
         </div>
       )}
+      <PhoneNav />
     </div>
   );
 }

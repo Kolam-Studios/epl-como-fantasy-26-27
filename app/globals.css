@@ -757,7 +757,9 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
   min-height: 100vh;
   background: var(--ground);
   color: var(--ink);
-  padding: 14px 14px 40px;
+  /* Bottom padding clears the fixed .ph-nav bar (see below) plus its own
+     safe-area inset, so the last row always scrolls fully into view. */
+  padding: 14px 14px calc(76px + env(safe-area-inset-bottom));
   font-variant-numeric: tabular-nums;
 }
 .ph-loading { color: var(--muted); padding: 40px 4px; text-align: center; font-size: 14px; }
@@ -861,6 +863,66 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
 }
 .ph-budcell .c { font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
 .ph-budcell .m { font-weight: 600; font-size: 14px; }
+
+/* PHONE BOTTOM NAV (#45): persistent tab bar on the three viewer screens
+   (board, squads, ledger). Fixed, safe-area aware, tokens only. */
+.ph-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--hair);
+  box-shadow: var(--shadow-md);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.ph-navtab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 6px;
+  border-top: 2px solid transparent;
+  color: var(--muted);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+}
+.ph-navtab.active { color: var(--ink); border-top-color: var(--bronze); }
+
+/* LEDGER controls (#46): horizontally-scrollable sort / position / sold-all
+   chip rows, above the list. Reuses the pill radius, not the .chip helper
+   (that class already carries a fixed flex rule via .ph-chip on squads). */
+.ph-ctrlwrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.ph-ctrlgroup {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 2px 0;
+  scrollbar-width: none;
+}
+.ph-ctrlgroup::-webkit-scrollbar { display: none; }
+.ph-chipbtn {
+  flex: 0 0 auto;
+  border: none;
+  background: var(--chip);
+  color: var(--muted);
+  border-radius: var(--pill);
+  padding: 6px 13px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ph-chipbtn.active { background: var(--btn-ink); color: var(--btn-ink-text); }
+.ph-ledger-unsold { opacity: 0.55; }
 
 /* Narrow screens (and the phone the console must also work on): one column */
 @media (max-width: 900px) {
