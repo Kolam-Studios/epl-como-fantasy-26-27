@@ -15,3 +15,7 @@ league.config.local.json
 
 # cached player photos + club badges (binaries, rebuilt via npm run assets)
 public/assets/
+
+# temporary local helper / seeder scripts (scratch DB, demo seeding, screenshots)
+# - never commit; keep them out of the staged diff entirely
+/_*.mjs
