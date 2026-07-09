@@ -754,12 +754,13 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
    colours only (same palette as the TV canvas above).
    ============================================================ */
 .ph-screen {
+  --ph-navh: 40px;
   min-height: 100vh;
   background: var(--ground);
   color: var(--ink);
-  /* Bottom padding clears the fixed .ph-nav bar (see below) plus its own
-     safe-area inset, so the last row always scrolls fully into view. */
-  padding: 14px 14px calc(76px + env(safe-area-inset-bottom));
+  /* Top padding clears the fixed .ph-nav bar (moved to the top per owner
+     feedback) plus the safe-area inset, so content starts below it. */
+  padding: calc(var(--ph-navh) + env(safe-area-inset-top) + 10px) 14px 24px;
   font-variant-numeric: tabular-nums;
 }
 .ph-loading { color: var(--muted); padding: 40px 4px; text-align: center; font-size: 14px; }
@@ -864,27 +865,29 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
 .ph-budcell .c { font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
 .ph-budcell .m { font-weight: 600; font-size: 14px; }
 
-/* PHONE BOTTOM NAV (#45): persistent tab bar on the three viewer screens
-   (board, squads, ledger). Fixed, safe-area aware, tokens only. */
+/* PHONE TOP NAV (#45; moved to the top per owner feedback that a bottom bar
+   sits over the phone's home/back gesture area and is easy to mis-click). Fixed,
+   safe-area aware, tokens only. Positioned by CSS regardless of DOM order, so
+   all three viewer screens (board, squads, ledger) pick it up unchanged. */
 .ph-nav {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  top: 0;
   z-index: 20;
   display: flex;
   background: var(--card);
-  border-top: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
   box-shadow: var(--shadow-md);
-  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  padding: calc(6px + env(safe-area-inset-top)) 4px 6px;
 }
 .ph-navtab {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px 6px;
-  border-top: 2px solid transparent;
+  padding: 6px 4px 8px;
+  border-bottom: 2px solid transparent;
   color: var(--muted);
   font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 700;
@@ -894,7 +897,38 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
   text-decoration: none;
   text-align: center;
 }
-.ph-navtab.active { color: var(--ink); border-top-color: var(--bronze); }
+.ph-navtab.active { color: var(--ink); border-bottom-color: var(--bronze); }
+
+/* BOARD collapsing portrait (owner ask: keep the big player picture prominent). A big
+   club-washed spotlight that pins under the top nav and shrinks as you scroll
+   (driven by --p, 0..1, set on scroll in PhoneBoard) so the sold list stays
+   reachable. Nameplate stays legible throughout; the eyebrow + meta fade out. */
+.ph-portrait {
+  position: sticky;
+  top: calc(var(--ph-navh) + env(safe-area-inset-top));
+  z-index: 5;
+  height: calc(320px - var(--p, 0) * 254px);
+  min-height: 66px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 6px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  will-change: height;
+}
+.ph-portrait-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
+.ph-portrait-eyebrow {
+  position: absolute; top: 10px; left: 13px;
+  color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  opacity: calc(1 - var(--p, 0) * 2.6);
+}
+.ph-portrait-plate {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 28px 14px 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.74), rgba(0, 0, 0, 0));
+}
+.ph-portrait-plate .ph-lotname { color: #fff; font-size: calc(30px - var(--p, 0) * 8px); line-height: 1; }
+.ph-portrait-plate .ph-lotmeta { color: #ece9df; margin-top: 5px; opacity: calc(1 - var(--p, 0) * 2.2); }
 
 /* LEDGER controls (#46): horizontally-scrollable sort / position / sold-all
    chip rows, above the list. Reuses the pill radius, not the .chip helper

@@ -159,11 +159,30 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
   const lot = payload?.currentLot ?? null;
   const sales = payload ? payload.recentSales.slice(0, 5) : [];
   const managers = payload ? [...payload.managers].sort((a, b) => a.slot - b.slot) : [];
+  const wash = lot ? washForClub(clubColors as never, lot.teamShort) : null;
+
+  // Collapse-on-scroll: drive --p (0..1) on the sticky portrait straight from
+  // the scroll position via a ref, so the 2s poll re-render and the scroll
+  // animation never fight over React state. Re-attaches when the lot changes.
+  const portraitRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = portraitRef.current;
+    if (!el) return;
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      const y = (document.scrollingElement || document.documentElement).scrollTop;
+      el.style.setProperty("--p", Math.min(1, Math.max(0, y / 200)).toFixed(3));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    tick();
+    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [lot?.id]);
 
   return (
     <div className="ph-screen" data-testid="board-page">
       <div className="ph-status">
-        <span className="ph-eyebrow">ON THE BLOCK{lot?.lotNo != null ? ` · LOT ${lot.lotNo}` : ""}</span>
         <span className={`ph-dotstat ${connected ? "on" : "off"}`} data-testid="poll-status">
           <span className="ph-livedot" />
           {connected ? "live" : "connection lost - retrying"}
@@ -176,18 +195,28 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
         <div className="ph-loading">loading the room...</div>
       ) : (
         <>
-          <div className="ph-card ph-lotcard">
-            {lot ? (
-              <>
+          {lot ? (
+            <div className="ph-portrait" ref={portraitRef} style={{ background: wash?.bandFrom ?? "var(--card)" }}>
+              <img
+                className="ph-portrait-img"
+                src={lot.code != null ? `/assets/players/250/p${lot.code}.png` : SILHOUETTE}
+                data-cdn={lot.code != null ? `${PL_PHOTO}/photos/players/500x500/${lot.code}.png` : undefined}
+                alt={lot.displayName}
+                onError={photoErr}
+              />
+              <span className="ph-eyebrow ph-portrait-eyebrow">ON THE BLOCK{lot.lotNo != null ? ` · LOT ${lot.lotNo}` : ""}</span>
+              <div className="ph-portrait-plate">
                 <div className="ph-lotname" data-testid="lot-name">{lot.displayName}</div>
                 <div className="ph-lotmeta">
                   {lot.teamShort ?? "?"} / {lot.position} / T{lot.tier ?? "?"} / opens {money(lot.openBid)}
                 </div>
-              </>
-            ) : (
+              </div>
+            </div>
+          ) : (
+            <div className="ph-card ph-lotcard">
               <div className="ph-lotmeta" data-testid="lot-empty">No lot on the block.</div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="ph-sechead">Recently sold</div>
           <div className="ph-stack" data-testid="recent-sales">
