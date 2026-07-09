@@ -164,7 +164,7 @@ function PhoneLedgerRow({ p }: { p: PlayerRow }) {
       <div className="ph-ledger-left">
         <span className="ph-dot" style={{ background: clubDot(p.teamShort) }} />
         <div style={{ minWidth: 0 }}>
-          <div className="ph-ledger-name">{p.name ?? "?"}</div>
+          <div className="ph-ledger-name">{p.displayName ?? p.name ?? "?"}</div>
           <div className="ph-sub">
             {p.teamShort ?? "?"} / {p.position} / T{p.tier ?? "?"}
             {p.ownerShort ? ` · ${abbr(p.ownerShort)}` : ""}
