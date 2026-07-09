@@ -15,7 +15,15 @@ import type { PlayersPayload } from "@/lib/players";
 // Inline silhouette (no file dependency, works on any deploy).
 export const SILHOUETTE =
   "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20250%20250'%3E%3Crect%20width='250'%20height='250'%20fill='%232a2f2b'/%3E%3Cg%20fill='%23565c54'%3E%3Ccircle%20cx='125'%20cy='98'%20r='46'/%3E%3Cpath%20d='M40%20250c0-52%2038-84%2085-84s85%2032%2085%2084z'/%3E%3C/g%3E%3C/svg%3E";
-export const PL = "https://resources.premierleague.com/premierleague";
+// PL resource bases. Player PHOTOS moved to a season-scoped path with a bare
+// {code}.png filename (no "p" prefix); club BADGES are still on the old
+// unscoped path. Verified live 9 Jul 2026:
+//   photos: premierleague25/photos/players/{110x140|500x500}/{code}.png  (200)
+//   badges: premierleague/badges/100/t{code}@x2.png                      (200)
+// SEASON NOTE: "premierleague25" is season-scoped - re-verify (it may roll to
+// premierleague26) during the pre-flight photo cache near the pool freeze.
+export const PL_PHOTO = "https://resources.premierleague.com/premierleague25";
+export const PL_BADGE = "https://resources.premierleague.com/premierleague";
 
 export function money(n: number | null | undefined): string {
   return n == null ? "?" : `$${n.toLocaleString()}`;

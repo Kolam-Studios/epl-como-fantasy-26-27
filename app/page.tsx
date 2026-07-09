@@ -23,7 +23,13 @@ type Pos = (typeof POSITIONS)[number];
 // Inline silhouette (no file dependency, works on any deploy).
 const SILHOUETTE =
   "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20250%20250'%3E%3Crect%20width='250'%20height='250'%20fill='%232a2f2b'/%3E%3Cg%20fill='%23565c54'%3E%3Ccircle%20cx='125'%20cy='98'%20r='46'/%3E%3Cpath%20d='M40%20250c0-52%2038-84%2085-84s85%2032%2085%2084z'/%3E%3C/g%3E%3C/svg%3E";
-const PL = "https://resources.premierleague.com/premierleague";
+// Player PHOTOS moved to a season-scoped path with a bare {code}.png filename;
+// club BADGES stay on the old unscoped path (both verified live 9 Jul 2026).
+// "premierleague25" is season-scoped - re-verify at the pre-flight cache near
+// freeze (it may roll to premierleague26). Kept local to match this file's
+// self-contained style; the shared copies live in components/tv-common.tsx.
+const PL_PHOTO = "https://resources.premierleague.com/premierleague25";
+const PL_BADGE = "https://resources.premierleague.com/premierleague";
 // Grey shades for the pool bar's tier segments (T1 darkest -> T4 lightest).
 const TIER_SHADE: Record<number, string> = { 1: "#3a3f38", 2: "#5c635a", 3: "#878e82", 4: "#b7bdb1" };
 
@@ -338,7 +344,7 @@ export default function Board() {
                     {lot.teamCode != null && (
                       <img
                         src={`/assets/badges/t${lot.teamCode}.png`}
-                        data-cdn={`${PL}/badges/100/t${lot.teamCode}@x2.png`}
+                        data-cdn={`${PL_BADGE}/badges/100/t${lot.teamCode}@x2.png`}
                         alt=""
                         onError={crestErr}
                       />
@@ -357,7 +363,7 @@ export default function Board() {
                   <div className="b-photo">
                     <img
                       src={lot.code != null ? `/assets/players/250/p${lot.code}.png` : SILHOUETTE}
-                      data-cdn={lot.code != null ? `${PL}/photos/players/250x250/p${lot.code}.png` : undefined}
+                      data-cdn={lot.code != null ? `${PL_PHOTO}/photos/players/500x500/${lot.code}.png` : undefined}
                       alt={lot.displayName}
                       onError={photoErr}
                     />
@@ -430,7 +436,7 @@ export default function Board() {
                     <li key={s.playerId} className="sold-row">
                       <img
                         src={s.code != null ? `/assets/players/110/p${s.code}.png` : SILHOUETTE}
-                        data-cdn={s.code != null ? `${PL}/photos/players/110x140/p${s.code}.png` : undefined}
+                        data-cdn={s.code != null ? `${PL_PHOTO}/photos/players/110x140/${s.code}.png` : undefined}
                         alt=""
                         onError={photoErr}
                       />

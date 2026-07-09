@@ -10,7 +10,7 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersPayload } from "@/lib/players";
-import { PL, PhoneNav, SILHOUETTE, abbr, clubDot, money, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
+import { PL_PHOTO, PhoneNav, SILHOUETTE, abbr, clubDot, money, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
 /** Sold rows first (highest paid first), then unsold rows by last season's points. */
 function ledgerSort(a: PlayerRow, b: PlayerRow): number {
@@ -31,7 +31,7 @@ function Row({ p }: { p: PlayerRow }) {
           <img
             className="thumb"
             src={p.code != null ? `/assets/players/110/p${p.code}.png` : SILHOUETTE}
-            data-cdn={p.code != null ? `${PL}/photos/players/110x140/p${p.code}.png` : undefined}
+            data-cdn={p.code != null ? `${PL_PHOTO}/photos/players/110x140/${p.code}.png` : undefined}
             alt=""
             onError={photoErr}
           />

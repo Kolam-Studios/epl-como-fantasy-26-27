@@ -18,7 +18,7 @@ import type { CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
 import clubColors from "@/lib/club-colors.json";
 import { washForClub } from "@/lib/club-core.mjs";
-import { PL, SILHOUETTE, crestErr } from "@/components/tv-common";
+import { PL_BADGE, SILHOUETTE, crestErr } from "@/components/tv-common";
 
 // Club short codes in club-colors.json's key order - both the gallery grid
 // and the prev/next cycle on the single-club panel walk this same list, so
@@ -32,7 +32,7 @@ function Crest({ code }: { code: number }) {
   return (
     <img
       src={`/assets/badges/t${code}.png`}
-      data-cdn={`${PL}/badges/100/t${code}@x2.png`}
+      data-cdn={`${PL_BADGE}/badges/100/t${code}@x2.png`}
       alt=""
       onError={crestErr}
     />

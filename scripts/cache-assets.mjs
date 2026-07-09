@@ -1,8 +1,17 @@
 // Cache player photos and club crests to public/assets/ so the board never
 // depends on the venue wifi on the night (THE HYBRID board uses a big portrait
-// plus a face thumbnail, and club crests). The Premier League CDN serves these
-// at 2x the nominal path size: the "250x250" path returns a 500x500 PNG and
-// "110x140" returns 220x280, so the TV spotlight portrait is genuinely 500px.
+// plus a face thumbnail, and club crests).
+//
+// CDN URL FORMAT (verified live 9 Jul 2026 - the earlier format was guessed and
+// 403'd, which is why the first cache runs "hung" on ~half the photos):
+//   photos: premierleague25/photos/players/{500x500|110x140}/{code}.png
+//           - season-scoped path, bare {code}.png filename (NO "p" prefix).
+//           - "500x500" returns a real 500px portrait; "110x140" returns 219x280
+//             (still ~2x), plenty for the face thumbnail.
+//   badges: premierleague/badges/100/t{code}@x2.png
+//           - UNCHANGED - crests are still on the old unscoped path.
+// SEASON NOTE: "premierleague25" is season-scoped and may roll to premierleague26.
+// Re-verify one photo URL by hand at the pre-flight cache near the pool freeze.
 //
 // Usage:
 //   node --env-file=.env scripts/cache-assets.mjs           all players, both sizes + crests
@@ -14,7 +23,7 @@
 //
 // Layout written:
 //   public/assets/players/250/p{code}.png   big board portrait (500x500 from the CDN)
-//   public/assets/players/110/p{code}.png   face thumbnail (220x280 from the CDN)
+//   public/assets/players/110/p{code}.png   face thumbnail (219x280 from the CDN)
 //   public/assets/badges/t{code}.png        club crest (200x200 from the CDN)
 //   public/assets/silhouette.svg            neutral fallback (never a broken image)
 //   public/assets/asset-cache-report.json   machine-readable run summary + missing list
@@ -57,10 +66,14 @@ if (maxArgIdx !== -1 && (!Number.isInteger(maxPlayers) || maxPlayers <= 0)) {
   process.exit(1);
 }
 
+// PHOTO_250 fills the dir250 board-portrait cache from the 500x500 CDN path
+// (a real 500px image); PHOTO_110 fills the dir110 thumbnail cache. Both use
+// the season-scoped photos path with a bare {code}.png filename.
 const PHOTO_250 = (code) =>
-  `https://resources.premierleague.com/premierleague/photos/players/250x250/p${code}.png`;
+  `https://resources.premierleague.com/premierleague25/photos/players/500x500/${code}.png`;
 const PHOTO_110 = (code) =>
-  `https://resources.premierleague.com/premierleague/photos/players/110x140/p${code}.png`;
+  `https://resources.premierleague.com/premierleague25/photos/players/110x140/${code}.png`;
+// Crests are still on the old unscoped badges path - do not season-scope this.
 const CREST = (teamCode) =>
   `https://resources.premierleague.com/premierleague/badges/100/t${teamCode}@x2.png`;
 
