@@ -899,36 +899,30 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
 }
 .ph-navtab.active { color: var(--ink); border-bottom-color: var(--bronze); }
 
-/* BOARD collapsing portrait (owner ask: keep the big player picture prominent). A big
-   club-washed spotlight that pins under the top nav and shrinks as you scroll
-   (driven by --p, 0..1, set on scroll in PhoneBoard) so the sold list stays
-   reachable. Nameplate stays legible throughout; the eyebrow + meta fade out. */
+/* BOARD portrait (owner ask: keep the big player picture prominent). A big
+   club-washed spotlight at the top of the lot card. It scrolls away with the
+   page like any other content - no sticky pin, no collapse. */
 .ph-portrait {
-  position: sticky;
-  top: calc(var(--ph-navh) + env(safe-area-inset-top));
-  z-index: 5;
-  height: calc(320px - var(--p, 0) * 254px);
-  min-height: 66px;
+  position: relative;
+  height: 320px;
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 6px;
   background: var(--card);
   box-shadow: var(--shadow-sm);
-  will-change: height;
 }
 .ph-portrait-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 12%; }
 .ph-portrait-eyebrow {
   position: absolute; top: 10px; left: 13px;
   color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-  opacity: calc(1 - var(--p, 0) * 2.6);
 }
 .ph-portrait-plate {
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 28px 14px 12px;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.74), rgba(0, 0, 0, 0));
 }
-.ph-portrait-plate .ph-lotname { color: #fff; font-size: calc(30px - var(--p, 0) * 8px); line-height: 1; }
-.ph-portrait-plate .ph-lotmeta { color: #ece9df; margin-top: 5px; opacity: calc(1 - var(--p, 0) * 2.2); }
+.ph-portrait-plate .ph-lotname { color: #fff; font-size: 30px; line-height: 1; }
+.ph-portrait-plate .ph-lotmeta { color: #ece9df; margin-top: 5px; }
 
 /* LEDGER controls (#46): horizontally-scrollable sort / position / sold-all
    chip rows, above the list. Reuses the pill radius, not the .chip helper

@@ -13,7 +13,7 @@
 // an unsold player - it never reaches `payload.sale` (which is null) and never
 // rides on `payload.player`. There is nothing to hide with CSS here.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -78,33 +78,12 @@ function PhoneDetail({ payload }: { payload: PlayerDetailPayload }) {
   const wash = washForClub(clubColors as never, p.teamShort);
   const tiles = statTiles(p.stats);
 
-  const portraitRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = portraitRef.current;
-    if (!el) return;
-    let raf = 0;
-    const tick = () => {
-      raf = 0;
-      const y = (document.scrollingElement || document.documentElement).scrollTop;
-      el.style.setProperty("--p", Math.min(1, Math.max(0, y / 200)).toFixed(3));
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(tick);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    tick();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [p.id]);
-
   return (
     <div className="ph-screen pd-screen" data-testid="player-page">
       <Link href="/ledger" className="pd-back" data-testid="pd-back">
         &larr; The ledger
       </Link>
-      <div className="ph-portrait" ref={portraitRef} style={{ background: wash?.bandFrom ?? "var(--card)" }}>
+      <div className="ph-portrait" style={{ background: wash?.bandFrom ?? "var(--card)" }}>
         <img
           className="ph-portrait-img"
           src={p.code != null ? `/assets/players/250/p${p.code}.png` : SILHOUETTE}

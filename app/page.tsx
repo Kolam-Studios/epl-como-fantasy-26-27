@@ -162,25 +162,6 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
   const managers = payload ? [...payload.managers].sort((a, b) => a.slot - b.slot) : [];
   const wash = lot ? washForClub(clubColors as never, lot.teamShort) : null;
 
-  // Collapse-on-scroll: drive --p (0..1) on the sticky portrait straight from
-  // the scroll position via a ref, so the 2s poll re-render and the scroll
-  // animation never fight over React state. Re-attaches when the lot changes.
-  const portraitRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = portraitRef.current;
-    if (!el) return;
-    let raf = 0;
-    const tick = () => {
-      raf = 0;
-      const y = (document.scrollingElement || document.documentElement).scrollTop;
-      el.style.setProperty("--p", Math.min(1, Math.max(0, y / 200)).toFixed(3));
-    };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    tick();
-    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
-  }, [lot?.id]);
-
   return (
     <div className="ph-screen" data-testid="board-page">
       <div className="ph-status">
@@ -197,7 +178,7 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
       ) : (
         <>
           {lot ? (
-            <div className="ph-portrait" ref={portraitRef} style={{ background: wash?.bandFrom ?? "var(--card)" }}>
+            <div className="ph-portrait" style={{ background: wash?.bandFrom ?? "var(--card)" }}>
               <img
                 className="ph-portrait-img"
                 src={lot.code != null ? `/assets/players/250/p${lot.code}.png` : SILHOUETTE}
