@@ -83,6 +83,8 @@ All live in `league.config.json` (public placeholders) merged at runtime with gi
 
 ## Acceptance criteria (v1)
 
+Checkboxes below record **production acceptance at a named commit**, not implementation alone. A box stays unchecked until the exact criterion has been run against the recorded commit and the evidence is captured in `docs/TEST-PLAN.md` or the linked deployment record. Code presence, an older passing run or a partial smoke test is not enough.
+
 - [ ] `npm run db:setup && npm run ingest` produces a populated, tiered player pool (GK/DEF/MID/FWD only) and seeded managers against a fresh Postgres.
 - [ ] Auctioneer can record a sale; an invalid sale (over max bid, below tier open, no position slot, already owned, squad full) is rejected server-side with a clear reason.
 - [ ] Two browsers (console + board): a sale entered on the console appears on the board within ~2s, and the reveal takeover fires with the sealed value and verdict.
@@ -97,5 +99,5 @@ All live in `league.config.json` (public placeholders) merged at runtime with gi
 
 ## Deployment
 
-- **Reference:** self-hosted (Docker) against Postgres (container or Neon).
-- **Port target:** Vercel + hosted Postgres. See `docs/HANDOFF.md` and `docs/PORTING.md`.
+- **Production:** Vercel + Neon Postgres at [epl-como-fantasy-26-27-cgtd.vercel.app](https://epl-como-fantasy-26-27-cgtd.vercel.app).
+- **Verified fallback:** `npm run build` then `npm start` on a laptop against Postgres. `output: standalone` supports future container packaging, but this repo does not contain a Dockerfile. See `docs/HANDOFF.md`, `docs/PORTING.md` and `docs/DEPLOYMENT.md`.

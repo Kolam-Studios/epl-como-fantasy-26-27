@@ -4,15 +4,16 @@ Context for any AI coding agent (Claude Code / Cursor) working this repo.
 
 ## What this is
 
-Config-driven **live auction-draft** tool for a private fantasy league. **v1 target: the auction, in person, Aug 2 2026.** Season scoring never lives here (the official FPL Draft site runs the season). **Public repo** at `github.com/miloli-git/epl-como-fantasy-26-27` - shared tooling only, no real names, no secrets, no private valuation content. Read `docs/PRD.md`, `docs/DESIGN.md`, `docs/DATA-MODEL.md`, `docs/HANDOFF.md` before changing anything.
+Config-driven **live auction-draft** tool for a private fantasy league. **v1 target: the auction, in person, Aug 2 2026.** Season scoring never lives here (the official FPL Draft site runs the season). **Public repo** at `github.com/Kolam-Studios/epl-como-fantasy-26-27` - shared tooling only, no real names, no secrets, no private valuation content. Read `docs/PRD.md`, `docs/DESIGN.md`, `docs/DATA-MODEL.md`, `docs/HANDOFF.md` before changing anything.
 
-## Current state + where to start (2026-07-08)
+## Current state + where to start (2026-07-10)
 
 - **Decisions are made.** The league owners have locked scope: $3,000 x 8 managers, four config-driven tiers, two-phase auction with phase-2 nomination rotation, commissioner-entry bidding, in-auction trades in v1, edit/void any sale with audit, sealed draft-morning valuations revealed at the hammer, war-room model with ~2s polling. `docs/DECISIONS-TO-CONFIRM.md` is the decision table; `docs/PRD.md` and `docs/DESIGN.md` are the requirements of record.
-- **The build is underway** per the plan in [issue #9](https://github.com/miloli-git/epl-como-fantasy-26-27/issues/9). Follow its sprint order; do not invent your own.
+- **A deployed beta is live** at commit `008d241`: [production](https://epl-como-fantasy-26-27-cgtd.vercel.app). Core auction flow, corrections, trades, sealed reveals and viewer surfaces are implemented. Source includes the first `/recap` cut, #55 is fixed, additive schema migrations and stage tags are landed, and the isolated 15-suite battery is green. Production `/api/recap` returns 500 and the browser shows `recap unavailable - retry`; the cause is unconfirmed pending the approved schema procedure and log inspection. The gate is to run the current non-destructive `db:setup`, confirm existing data survives, then re-smoke `/api/recap` and `/recap`. Remaining Aug 2 gates include final squads, the FPL Draft entry checklist and ledger link in #56, production reset/freeze and the formal two-device, load and physical/fallback rehearsal.
+- **Follow [issue #9](https://github.com/Kolam-Studios/epl-como-fantasy-26-27/issues/9) for live delivery status.** Requirements live in `docs/PRD.md`; verification method and latest evidence live in `docs/TEST-PLAN.md`; deployment execution evidence lives in issue #23. Do not create another status surface.
 - **Where docs conflict, `docs/DESIGN.md` and `docs/PRD.md` are correct** (the max-bid rule reserves the minimum opening bid per open slot, config-driven).
-- Visual design direction is being finalised by the owners - see `docs/VISUAL-DESIGN.md` and `docs/wireframes/` for the current candidate.
-- Run the Vercel port walk (`docs/PORTING.md`) at the END of Sprint 1, not at the end of the project.
+- The current visual design is implemented. See `docs/VISUAL-DESIGN.md` and `docs/wireframes/` for the locked system and reference screens.
+- Vercel, Neon and the real roster override are live. Complete the remaining formal port-walk evidence and physical drills in `docs/PORTING.md` and `docs/TEST-PLAN.md` before acceptance.
 
 ## Human confirmation gates
 
@@ -24,7 +25,7 @@ Decisions for the human driving, not the agent. Stop and ask; never assume, gues
 ## Stack
 
 - Next.js (App Router, TypeScript), Postgres via `postgres` (postgres.js), live updates by polling `/api/state` (~2s).
-- One `DATABASE_URL`. Runs self-hosted (Docker, `output: standalone`) and on Vercel from the same code.
+- One `DATABASE_URL`. Production runs on Vercel. The verified laptop fallback is `npm run build` then `npm start` against Postgres. `output: standalone` supports future container packaging, but no Dockerfile is present in this repo.
 - Claude API for the draft-morning briefs + valuations job only; the auction must run fine without it.
 
 ## Hard rules
