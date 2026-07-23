@@ -900,6 +900,46 @@ table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
   text-align: center;
 }
 .ph-navtab.active { color: var(--ink); border-bottom-color: var(--bronze); }
+/* Belt-and-suspenders: the phone bar is only mounted in the phone sub-views
+   (useIsPhone), but that flips one render after a resize crosses 640px. This
+   guarantees it is never visible at desktop width, so it can never briefly
+   stack over the desktop .room-nav mid-resize. */
+@media (min-width: 641px) { .ph-nav { display: none; } }
+
+/* DESKTOP ROOM NAV (#62): companion to .ph-nav for browser viewing. Mounted
+   once in app/layout.tsx (components/RoomNav.tsx). Sticky in normal flow, so it
+   reserves its own height at the top of the document (no overlap of the scaled
+   board canvas, no post-hydration layout shift), unlike the phone bar which is
+   fixed. Hidden below the phone breakpoint so it never doubles with .ph-nav. */
+.room-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  background: var(--card);
+  border-bottom: 1px solid var(--hair);
+  box-shadow: var(--shadow-md);
+  padding: 0 6px;
+}
+@media (max-width: 640px) {
+  .room-nav { display: none; }
+}
+.room-navtab {
+  display: flex;
+  align-items: center;
+  padding: 11px 20px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.room-navtab:hover { color: var(--ink); }
+.room-navtab.active { color: var(--ink); border-bottom-color: var(--bronze); }
 
 /* BOARD portrait (owner ask: keep the big player picture prominent). A big
    club-washed spotlight at the top of the lot card. It scrolls away with the

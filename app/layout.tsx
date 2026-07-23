@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Hanken_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
+import RoomNav from "@/components/RoomNav";
 
 // Self-hosted at build time by next/font (no font CDN dependency on the night).
 // Hanken Grotesk 300 = the light display face; Inter = body/UI.
@@ -26,7 +27,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>{children}</body>
+      <body>
+        <RoomNav />
+        {children}
+      </body>
     </html>
   );
 }

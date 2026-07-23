@@ -227,7 +227,11 @@ export function crestErr(e: React.SyntheticEvent<HTMLImageElement>) {
 // not part of this nav. Rendered only inside the phone sub-components, so it
 // never reaches the TV canvas path.
 
-const PHONE_TABS = [
+// Shared by the phone tab bar (PhoneNav, below) and the desktop tab bar
+// (components/RoomNav.tsx) so the two navigations never drift apart. The
+// console and /board/preview are deliberately absent - operator/verification
+// surfaces, not room-facing viewer pages.
+export const ROOM_TABS = [
   { href: "/", label: "Board" },
   { href: "/squads", label: "Squads" },
   { href: "/ledger", label: "Ledger" },
@@ -239,7 +243,7 @@ export function PhoneNav() {
   const pathname = usePathname();
   return (
     <nav className="ph-nav" aria-label="Room navigation">
-      {PHONE_TABS.map((t) => {
+      {ROOM_TABS.map((t) => {
         const active = pathname === t.href;
         return (
           <Link
