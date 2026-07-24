@@ -16,9 +16,11 @@ rolls forward into the next stage; cash injections top it up at fixed points.
 | Stage | When | Money in | Money out | Balance after |
 |---|---|---|---|---|
 | Auction one | Aug 2 | A1 = $3,000 starting budget | X1 auction spend | Y1 = A1 - X1 |
-| Waiver window one | Aug - Jan | A2 = $500 (TBC) injection | X2 waiver purchases | Y2 = Y1 + A2 - X2 |
+| Waiver window one | Aug - Jan | A2 = $500 injection (settled) | X2 waiver purchases | Y2 = Y1 + A2 - X2 |
 | Auction two (rebid) | early Feb, after the real transfer window closes | A3 = $2,000 injection | X3 rebid spend | Y3 = Y2 + A3 - X3 |
-| Waiver window two | Feb - May | A4 = $500 (TBC) injection | X4 waiver purchases | season ends |
+| Waiver window two | Feb - May | A4 = $500 injection (settled) | X4 waiver purchases | season ends |
+
+The $500 waiver injection is $500 total for the whole window (not $500 per month).
 
 All amounts are league config, never code.
 
@@ -34,14 +36,24 @@ pot: a $1,000 August star cost 33% of the August budget but eats 50% of the
 February base pot. Effect: bargain buys and saved money appreciate; heavy
 spending on one star is taxed at the rebid. This is intended.
 
-## Waivers (mechanics TBD)
+## Waivers (mechanics decided on the rules review call)
 
 Between auctions, managers buy waivers to swap out injured or underperforming
 players. Waiver spending draws on the same wallet, so it directly reduces
-February firepower. **Direction (9 Jul): waivers run as mini auctions** -
-contested players go to the highest bidder rather than a fixed fee or
-priority order. Increments, timing, and what happens to a dropped player's
-salary are still open with the group.
+February firepower. Waivers run as **monthly sealed blind-bid windows**:
+
+- Bids are due on the **last day of each month**; the first window lands at
+  the **end of September**.
+- Each manager submits sealed bids through their **own token link** (a private
+  per-manager login - a random token, no password, no account). The highest
+  bid on each player wins.
+- **No cap** on how many players you bid on, and you **win every bid you win**,
+  so you bid only where you genuinely want the player. You may **drop** a won
+  player back to the pool but cannot re-bid within the same window.
+- Results go out, managers accept or reject their wins and drop squad players
+  to make room, and the shared board updates. Managers keep the app roster in
+  sync with the official FPL Draft roster (a manual step that needs time).
+- Build this **after** the auction; the first window is end of September.
 
 Banking money is an intended strategy, not an exploit (decided 9 Jul): a
 manager who goes cheap in August and arrives rich in February has earned
@@ -49,18 +61,23 @@ that position. There is no carry-over cap.
 
 ## Open questions (decide before v2 build)
 
-1. Injection amounts: $500 / $2,000 / $500 are working numbers; only the
-   $2,000 rebid injection is considered settled.
-2. Waiver mini-auction mechanics: opening price, increments, when and how
-   the auction is held (live? deadline-based?).
-3. Dropped player salary: gone entirely, or partial refund?
+1. Dropped player: does a won-then-dropped player go to the second-highest
+   bidder, or straight back to the pool?
+2. Monthly rollover: how the window behaves in a month with no bids in it.
+3. Waiver window tie-break rule.
 4. Rebid date: exact date in early February.
 5. Roster shape between auctions: does 2 GK / 5 DEF / 5 MID / 3 FWD hold
    through waivers?
 
-Resolved 9 Jul by the league owner: waivers are mini auctions (mechanics
-above still open); no retention cap (retain whatever you can afford); no
-carry-over cap (banking money is an intended reward).
+Resolved 9 Jul by the league owner: no retention cap (retain whatever you can
+afford); no carry-over cap (banking money is an intended reward).
+
+Resolved on the rules review call: injection amounts are $500 / $2,000 / $500
+(all settled; the $500 windows are per-window totals, not per month); waivers
+are monthly sealed blind-bid windows with per-manager token logins, no
+per-window bid cap, win-all-you-win, and an optional drop back to the pool
+(see the Waivers section). Trades are free and year-round with a group veto
+vote (details in docs/PRD.md and the rulebook).
 
 ## Consequences for the build
 

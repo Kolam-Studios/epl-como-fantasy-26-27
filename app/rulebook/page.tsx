@@ -14,8 +14,8 @@ import { PhoneNav, useIsPhone } from "@/components/tv-common";
 // ---- Diagrams (inline SVG, tokens only via the .rb-diagram classes in
 // globals.css - never a hardcoded fill/stroke here). -------------------------
 
-/** Diagram 1: Phase 1 offers every player once; unsold rolls into Phase 2's
- * nomination rotation, which runs until every squad is full. */
+/** Diagram 1: Phase 1 offers Tiers 1-4 once; Tier 5 and anything unsold roll
+ * into Phase 2's nomination rotation, which runs until every squad is full. */
 function TwoPhaseDiagram() {
   return (
     <svg className="rb-diagram-svg" viewBox="0 0 760 210" role="img" aria-label="Two-phase auction flow">
@@ -27,24 +27,24 @@ function TwoPhaseDiagram() {
 
       <rect className="rb-box" x="134" y="20" width="224" height="170" rx="10" />
       <text className="rb-kicker" x="246" y="42" textAnchor="middle">PHASE 1</text>
-      <text className="rb-label-strong" x="246" y="64" textAnchor="middle">Every player offered once</text>
+      <text className="rb-label-strong" x="246" y="64" textAnchor="middle">Tiers 1-4, offered once</text>
       <text className="rb-label-mut" x="246" y="80" textAnchor="middle">price order, shuffled within tier</text>
       <line className="rb-line" x1="154" y1="96" x2="338" y2="96" />
       <text className="rb-label" x="246" y="120" textAnchor="middle">bid &rarr; SOLD</text>
       <text className="rb-label" x="246" y="142" textAnchor="middle">no bid &rarr; NO BID</text>
-      <text className="rb-label-mut" x="246" y="158" textAnchor="middle">(stays available for Phase 2)</text>
+      <text className="rb-label-mut" x="246" y="158" textAnchor="middle">(unsold rolls to Phase 2)</text>
       <text className="rb-label-mut" x="246" y="178" textAnchor="middle">next name known only once a lot closes</text>
 
       <line className="rb-line" x1="358" y1="105" x2="386" y2="105" />
       <polygon className="rb-arrowhead" points="386,100 386,110 394,105" />
-      <text className="rb-label-mut" x="376" y="95" textAnchor="middle">all offered</text>
+      <text className="rb-label-mut" x="376" y="95" textAnchor="middle">end of Tier 4</text>
 
       <rect className="rb-box" x="394" y="20" width="224" height="170" rx="10" />
       <text className="rb-kicker" x="506" y="42" textAnchor="middle">PHASE 2</text>
       <text className="rb-label-strong" x="506" y="64" textAnchor="middle">Nomination rotation</text>
-      <text className="rb-label-mut" x="506" y="80" textAnchor="middle">managers nominate any unsold player</text>
-      <text className="rb-label-mut" x="506" y="96" textAnchor="middle">(skipping full squads)</text>
-      <text className="rb-label" x="506" y="128" textAnchor="middle">runs until every squad is 15/15</text>
+      <text className="rb-label-mut" x="506" y="80" textAnchor="middle">Tier 5 + any unsold player</text>
+      <text className="rb-label-mut" x="506" y="96" textAnchor="middle">must nominate if a slot is open</text>
+      <text className="rb-label" x="506" y="128" textAnchor="middle">$1 min, runs until 15/15</text>
 
       <line className="rb-line" x1="618" y1="105" x2="646" y2="105" />
       <polygon className="rb-arrowhead" points="646,100 646,110 654,105" />
@@ -62,33 +62,34 @@ function ReserveRuleDiagram() {
     <svg className="rb-diagram-svg" viewBox="0 0 760 150" role="img" aria-label="Max-bid reserve rule, worked example">
       <text className="rb-kicker" x="20" y="20">EXAMPLE: $500 REMAINING, 4 OPEN SLOTS (3 OTHER OPEN SLOTS)</text>
 
-      <rect className="rb-chipbox" x="20" y="34" width="518" height="56" rx="10" />
-      <text className="rb-label-strong" x="279" y="58" textAnchor="middle">MAX BID</text>
-      <text className="rb-label" x="279" y="76" textAnchor="middle">$485</text>
+      <rect className="rb-chipbox" x="20" y="34" width="600" height="56" rx="10" />
+      <text className="rb-label-strong" x="320" y="58" textAnchor="middle">MAX BID</text>
+      <text className="rb-label" x="320" y="76" textAnchor="middle">$497</text>
 
-      <rect className="rb-accentbox" x="546" y="34" width="154" height="56" rx="10" />
-      <text className="rb-label-strong" x="623" y="58" textAnchor="middle">RESERVE</text>
-      <text className="rb-label" x="623" y="76" textAnchor="middle">$15</text>
+      <rect className="rb-accentbox" x="628" y="34" width="72" height="56" rx="10" />
+      <text className="rb-label-strong" x="664" y="58" textAnchor="middle">RESERVE</text>
+      <text className="rb-label" x="664" y="76" textAnchor="middle">$3</text>
 
-      <text className="rb-label-mut" x="20" y="112">reserve = minimum opening bid ($5) &times; other open slots (3) = $15</text>
-      <text className="rb-label-mut" x="20" y="132">$500 remaining - $15 reserve = $485 max bid</text>
+      <text className="rb-label-mut" x="20" y="112">reserve = minimum opening bid ($1) &times; other open slots (3) = $3</text>
+      <text className="rb-label-mut" x="20" y="132">$500 remaining - $3 reserve = $497 max bid</text>
     </svg>
   );
 }
 
 /** Diagram 3: the tier ladder - T1 widest and highest opening bid at top,
- * stepping down to T4's league-wide minimum. */
+ * stepping down to T5's league-wide $1 minimum. */
 function TierLadderDiagram() {
   const rows = [
     { tier: "T1", band: "FPL price ≥ 12.0", bid: "Opens $50", x: 20, w: 680, accent: true },
-    { tier: "T2", band: "FPL price ≥ 9.0", bid: "Opens $25", x: 60, w: 600, accent: false },
-    { tier: "T3", band: "FPL price ≥ 7.0", bid: "Opens $10", x: 100, w: 520, accent: false },
-    { tier: "T4", band: "everyone else", bid: "Opens $5", x: 140, w: 440, accent: false },
+    { tier: "T2", band: "FPL price ≥ 9.0", bid: "Opens $25", x: 52, w: 616, accent: false },
+    { tier: "T3", band: "FPL price ≥ 7.0", bid: "Opens $10", x: 84, w: 552, accent: false },
+    { tier: "T4", band: "over 5.5, under 7.0", bid: "Opens $5", x: 116, w: 488, accent: false },
+    { tier: "T5", band: "5.5 and under", bid: "Opens $1", x: 148, w: 424, accent: false },
   ];
   return (
-    <svg className="rb-diagram-svg" viewBox="0 0 760 280" role="img" aria-label="Tier ladder, opening bids by tier">
+    <svg className="rb-diagram-svg" viewBox="0 0 760 350" role="img" aria-label="Tier ladder, opening bids by tier">
       {rows.map((r, i) => {
-        const y = 20 + i * 65;
+        const y = 20 + i * 62;
         return (
           <g key={r.tier}>
             <rect className={r.accent ? "rb-accentbox" : "rb-box"} x={r.x} y={y} width={r.w} height="50" rx="8" />
@@ -107,9 +108,9 @@ function TierLadderDiagram() {
 function SeasonTimelineDiagram() {
   const stops = [
     { x: 80, month: "AUG", label: "Auction 1", sub: "+$3,000" },
-    { x: 290, month: "AUG - JAN", label: "Waiver window 1", sub: "injection (TBC)" },
+    { x: 290, month: "AUG - JAN", label: "Waiver window 1", sub: "+$500" },
     { x: 500, month: "FEB", label: "Rebid", sub: "+$2,000" },
-    { x: 690, month: "FEB - MAY", label: "Waiver window 2", sub: "injection (TBC)" },
+    { x: 690, month: "FEB - MAY", label: "Waiver window 2", sub: "+$500" },
   ] as const;
   return (
     <svg className="rb-diagram-svg" viewBox="0 0 760 200" role="img" aria-label="Provisional season timeline, Aug to May">
@@ -187,24 +188,25 @@ function RulebookBody() {
         <h2 className="rb-h2">The two-phase auction</h2>
         <div className="rb-card rb-prose">
           <p>
-            <strong>Phase 1:</strong> every player is offered exactly once, in order of FPL price from
-            highest to lowest, shuffled within each price tier so the order is not fully predictable.
-            Bidding happens by voice in the room; the auctioneer records the winning manager and price.
-            If nobody bids, the player is marked NO BID and stays available for later - there is no
-            ad-hoc re-queuing mid-phase. The room only learns the next player&apos;s name once the
-            current lot closes.
+            <strong>Phase 1 (Tiers 1-4):</strong> every player in Tiers 1 to 4 is offered exactly once,
+            in order of FPL price from highest to lowest, shuffled within each price tier so the order
+            is not fully predictable. Bidding happens by voice in the room; the auctioneer records the
+            winning manager and price. If nobody bids, the player is marked NO BID and stays available
+            for Phase 2 - there is no ad-hoc re-queuing mid-phase. The room only learns the next
+            player&apos;s name once the current lot closes. Phase 1 ends at the end of Tier 4.
           </p>
           <p>
-            <strong>Phase 2:</strong> once every player has been offered, the auctioneer triggers
-            phase 2. Managers nominate any unsold player - including NO BID players - in a fixed
-            rotation, skipping any manager whose squad is already full, until every squad reaches
-            15 of 15.
+            <strong>Phase 2 (nomination):</strong> once Tier 4 is done, the auctioneer triggers phase 2.
+            It covers all of Tier 5 plus any unsold or NO BID players from the earlier tiers. Managers
+            take turns nominating in a fixed rotation, skipping any manager whose squad is already full;
+            a manager with an open slot must nominate (no passing). A nominated player goes up at a
+            minimum opening bid of $1. The nomination continues until every squad reaches 15 of 15.
           </p>
           <div className="rb-diagram">
             <TwoPhaseDiagram />
             <div className="rb-diagram-caption">
-              Phase 1 offers every player once; anything unsold rolls into Phase 2&apos;s nomination
-              rotation.
+              Phase 1 offers Tiers 1-4 once; Tier 5 and anything unsold roll into Phase 2&apos;s
+              nomination rotation.
             </div>
           </div>
         </div>
@@ -230,17 +232,19 @@ function RulebookBody() {
               <tr><td>Tier 1</td><td>&ge; 12.0</td><td>$50</td></tr>
               <tr><td>Tier 2</td><td>&ge; 9.0</td><td>$25</td></tr>
               <tr><td>Tier 3</td><td>&ge; 7.0</td><td>$10</td></tr>
-              <tr><td>Tier 4</td><td>everyone else</td><td>$5</td></tr>
+              <tr><td>Tier 4</td><td>over 5.5, under 7.0</td><td>$5</td></tr>
+              <tr><td>Tier 5</td><td>5.5 and under</td><td>$1</td></tr>
             </tbody>
           </table>
           <p>
-            The lowest tier&apos;s opening bid ($5 by default) is the league-wide minimum opening bid -
-            the number the max-bid reserve rule below is built on.
+            The lowest tier&apos;s opening bid ($1) is the league-wide minimum opening bid - the number
+            the max-bid reserve rule below is built on. Tiers 1 to 4 run in Phase 1; Tier 5 is bid for
+            by nomination in Phase 2.
           </p>
           <div className="rb-diagram">
             <TierLadderDiagram />
             <div className="rb-diagram-caption">
-              Higher tiers carry higher opening bids; Tier 4 sets the league-wide minimum.
+              Higher tiers carry higher opening bids; Tier 5 sets the league-wide $1 minimum.
             </div>
           </div>
         </div>
@@ -271,19 +275,19 @@ function RulebookBody() {
           <p>
             A manager&apos;s maximum legal bid is their remaining budget minus the minimum opening bid
             multiplied by the number of their OTHER open slots (the slots left after the one they might
-            be about to fill). The minimum opening bid is the lowest tier&apos;s opening bid ($5 by
-            default).
+            be about to fill). The minimum opening bid is the lowest tier&apos;s opening bid, which is
+            $1.
           </p>
           <p>
             This guarantees every manager can always afford to complete their squad - nobody can bid
             themselves into a corner. It is computed live for all 8 managers and shown everywhere on
-            screen.
+            screen, though it only really bites near the very end, since the floor is $1.
           </p>
           <div className="rb-diagram">
             <ReserveRuleDiagram />
             <div className="rb-diagram-caption">
               Worked example: a manager with $500 left and 4 open slots (3 OTHER open slots) has a max
-              bid of $500 - ($5 &times; 3) = $485.
+              bid of $500 - ($1 &times; 3) = $497.
             </div>
           </div>
         </div>
@@ -301,9 +305,14 @@ function RulebookBody() {
           </p>
           <div className="rb-legend">
             <span className="rb-legend-item"><span className="pill up">STEAL</span><span className="rb-legend-label">paid well under value</span></span>
-            <span className="rb-legend-item"><span className="pill flat">FAIR</span><span className="rb-legend-label">within $50 of value</span></span>
+            <span className="rb-legend-item"><span className="pill flat">FAIR</span><span className="rb-legend-label">near value</span></span>
             <span className="rb-legend-item"><span className="pill down">OVERPAY</span><span className="rb-legend-label">paid well over value</span></span>
           </div>
+          <p>
+            The band that separates a steal from a fair price from an overpay is not a fixed dollar
+            figure. It is set on draft morning, calibrated to that day&apos;s valuations and the state
+            of the league economy, rather than hardcoded.
+          </p>
           <p>
             Sealing is enforced on the server, not just hidden with styling: a sealed valuation never
             appears in any data sent to a browser for a player who has not yet sold.
@@ -312,18 +321,28 @@ function RulebookBody() {
       </section>
 
       <section className="rb-section">
-        <div className="rb-kick">IN-AUCTION TRADES</div>
-        <h2 className="rb-h2">Trades</h2>
+        <div className="rb-kick">TRADES</div>
+        <h2 className="rb-h2">Trades and the veto</h2>
         <div className="rb-card rb-prose">
           <p>
-            During a pause in the draft, the auctioneer can enter a trade between two managers -
-            players, cash, or both. Salaries travel with the player: trade away a $1,000 player and
-            $1,000 of spend moves off your budget and onto theirs, and cash can settle any difference.
+            Trades are free - there is no brokerage fee - and allowed both during the auction and all
+            year round. During a pause in the draft, the auctioneer can enter a trade between two
+            managers: players, cash, or both. Salaries travel with the player: trade away a $1,000
+            player and $1,000 of spend moves off your budget and onto theirs, and cash can settle any
+            difference.
           </p>
           <p>
             Trades are guarded: no manager&apos;s budget can go negative, position quotas are
             respected, and no squad can end up over 15 players. Both managers&apos; budgets and max
-            bids recalculate instantly, and the board announces the trade.
+            bids recalculate instantly, and every trade is announced.
+          </p>
+          <p>
+            <strong>The veto:</strong> any manager can call a veto vote on a trade. Counting only the
+            managers who are not party to the trade, if more than half of them veto within 24 hours,
+            the trade is void; anyone who does not vote in time simply abstains. For an eight-manager
+            league a two-way trade needs 4 of the other 6 to veto, and a three-way trade needs 3 of the
+            other 5. The veto is run by the group, not enforced by the tool, and it is how the league
+            polices lopsided or repeat trade-backs.
           </p>
         </div>
       </section>
@@ -348,6 +367,22 @@ function RulebookBody() {
             Once the draft is done, the tool produces a recap and awards view (biggest overpay, steal
             of the night, and more), a per-manager checklist for entering the squad on the FPL Draft
             site, and a permanent archive of the full ledger.
+          </p>
+        </div>
+      </section>
+
+      <section className="rb-section">
+        <div className="rb-kick">GOVERNANCE</div>
+        <h2 className="rb-h2">Disputes and grey areas</h2>
+        <div className="rb-card rb-prose">
+          <p>
+            Any rules dispute or grey area - anything the rulebook does not settle cleanly - is decided
+            by a vote of the three Commissioners. If that vote is not unanimous, the head Commissioner
+            has the final say.
+          </p>
+          <p>
+            This is a group rule, decided and recorded by the Commissioners; it is not enforced by the
+            tool.
           </p>
         </div>
       </section>
@@ -378,8 +413,8 @@ function RulebookBody() {
           <ol>
             <li><strong>Auction one (Aug 2):</strong> start with $3,000, spend it at the auction.</li>
             <li>
-              <strong>Waiver window one (Aug - Jan):</strong> a smaller injection (working figure
-              $500, to be confirmed) to buy waivers.
+              <strong>Waiver window one (Aug - Jan):</strong> a $500 injection (settled) to buy waivers
+              across the whole first half of the season - $500 total for the period, not per month.
             </li>
             <li>
               <strong>Auction two, the rebid (early February, after the real transfer window closes):
@@ -396,10 +431,14 @@ function RulebookBody() {
             </li>
           </ol>
           <p>
-            Waivers run as sealed-bid mini-auctions: a contested player is put up with a deadline, each
-            interested manager submits one sealed maximum, and the highest bid wins. The commissioner
-            enters the result - there is no live real-time bidding. Waiver spending draws on the same
-            wallet, so it directly reduces February firepower.
+            Waivers run as monthly sealed blind-bid windows. Bids are due on the last day of the month,
+            the first window landing at the end of September. Each manager submits their sealed bids
+            through their own token link (a private per-manager login, no password); the highest bid on
+            each player wins. There is no cap on how many players you bid on, and you win every bid you
+            win - so you bid only where you truly want the player. You may drop a player you win back to
+            the pool, but you cannot re-bid within that same window. The results go out, managers accept
+            or reject their wins and drop squad players to make room, and the shared board updates.
+            Waiver spending draws on the same wallet, so it directly reduces February firepower.
           </p>
           <p>
             No carry-over cap: banking money in August to arrive rich in February is an intended,
@@ -408,10 +447,10 @@ function RulebookBody() {
           <div className="rb-provisional-note">
             Still open - not yet decided:
             <ul>
-              <li>the exact waiver injection amounts</li>
-              <li>the waiver mini-auction&apos;s opening price, increments, timing, and tie-break rule</li>
-              <li>whether a dropped player&apos;s salary is forfeited or partially refunded</li>
-              <li>the exact February date</li>
+              <li>whether a dropped player goes to the second-highest bidder or back to the pool</li>
+              <li>the monthly rollover rule when a window has no bids in it</li>
+              <li>the waiver window&apos;s tie-break rule</li>
+              <li>the exact February rebid date</li>
               <li>whether the 2 GK / 5 DEF / 5 MID / 3 FWD roster shape holds through waivers</li>
             </ul>
           </div>
