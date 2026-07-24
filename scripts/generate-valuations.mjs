@@ -39,6 +39,9 @@ const BRIEFS_ONLY = has("--briefs-only");
 const SCOPE = val("--scope", "all"); // all | premium
 const MODEL = val("--model", "claude-opus-4-8"); // skill default; override for cost
 const BATCH = parseInt(val("--batch", "15"), 10);
+const BAND_PCT_ARG = val("--band-pct", null); // manual override for the band fraction
+// Minimum number of valuations needed before a median-based band is meaningful.
+const MIN_FOR_BAND = 3;
 
 const dbUrl = process.env.DATABASE_URL;
 const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -60,6 +63,15 @@ const slots = squadSize(cfg);
 const totalMoney = cfg.budget * nManagers;
 const totalSlots = slots * nManagers;
 const avgPerPlayer = Math.round(totalMoney / totalSlots);
+
+// Reveal band fraction (#70): the FAIR band is this fraction of the day's
+// median valuation, so "fair" scales with the economy on the day rather than a
+// fixed dollar number. Precedence: --band-pct flag, then config.valueBandPct,
+// then a 0.15 (15%) default. Guarded to a sane (0, 1] range.
+const BAND_PCT = (() => {
+  const raw = BAND_PCT_ARG != null ? Number(BAND_PCT_ARG) : Number(cfg.valueBandPct);
+  return Number.isFinite(raw) && raw > 0 && raw <= 1 ? raw : 0.15;
+})();
 
 const sql = postgres(dbUrl, { max: 1 });
 const dbName = (() => { try { return new URL(dbUrl).pathname.slice(1); } catch { return "?"; } })();
@@ -179,6 +191,17 @@ async function valuateBatch(players) {
 }
 
 const tally = { valued: 0, briefed: 0, batches: 0, failedBatches: 0, skipped: 0 };
+// Every value produced this run, for the DRY-run band calibration (a real run
+// reads the valuations table instead, so it captures prior partial runs too).
+const runValues = [];
+
+/** Median of a numeric array (rounded); 0 for an empty array. */
+function median(nums) {
+  if (nums.length === 0) return 0;
+  const s = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
+}
 
 try {
   console.log(
@@ -225,6 +248,7 @@ try {
             on conflict (player_id) do update set value = excluded.value, generated_at = now()
           `;
         }
+        runValues.push(value);
         tally.valued++;
       }
       if (!VALUES_ONLY && brief.length) {
@@ -239,6 +263,46 @@ try {
       }
     }
     console.log(`  batch ${tally.batches}/${Math.ceil(players.length / BATCH)} done (${out.length} returned)`);
+  }
+
+  // --- calibrate the reveal band from the day's valuations (#70) ----------
+  // The steal/fair/overpay band is set here, on draft morning, from the actual
+  // spread of the day's valuations - NOT the fixed config.valueBadgeThreshold
+  // (that stays only as the graceful fallback for when this job has not run).
+  // Band = BAND_PCT of the median valuation, floored at the league minimum
+  // opening bid and rounded to a dollar. A real run reads the whole valuations
+  // table (so it folds in earlier partial runs); a dry run uses this run's
+  // values and writes nothing. --briefs-only skips it (no values to calibrate).
+  if (!BRIEFS_ONLY) {
+    const values = DRY
+      ? runValues
+      : (await sql`select value from valuations where value is not null`)
+          .map((r) => Number(r.value))
+          .filter(Number.isFinite);
+    if (values.length >= MIN_FOR_BAND) {
+      const med = median(values);
+      const band = Math.max(minOpenBid(cfg), Math.round(BAND_PCT * med));
+      if (!DRY) {
+        await sql`
+          insert into valuation_meta (id, fair_band, band_pct, median_value, sample_size, generated_at)
+          values (1, ${band}, ${BAND_PCT}, ${med}, ${values.length}, now())
+          on conflict (id) do update set
+            fair_band = excluded.fair_band, band_pct = excluded.band_pct,
+            median_value = excluded.median_value, sample_size = excluded.sample_size,
+            generated_at = now()
+        `;
+      }
+      console.log(
+        `reveal band: $${band} (${Math.round(BAND_PCT * 100)}% of median $${med}, ` +
+          `floor $${minOpenBid(cfg)}, n=${values.length})` +
+          (DRY ? " (dry run - not written)" : ""),
+      );
+    } else {
+      console.log(
+        `reveal band NOT set: only ${values.length} valuation(s) (< ${MIN_FOR_BAND}); ` +
+          `the reveal falls back to config.valueBadgeThreshold $${cfg.valueBadgeThreshold}.`,
+      );
+    }
   }
 
   console.log(

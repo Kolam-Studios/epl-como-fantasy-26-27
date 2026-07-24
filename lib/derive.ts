@@ -142,11 +142,16 @@ export function gradingTertiles(
   return gradingTertilesCore(sales) as Tertiles | null;
 }
 
-/** v1 verdict logic (see derive-core for the marked rule). */
+/**
+ * Reveal verdict logic (see derive-core for the marked rule). `fairBand` is the
+ * draft-morning calibrated band (#70); omit it to fall back to
+ * config.valueBadgeThreshold.
+ */
 export function saleVerdict(
   cfg: LeagueConfig,
   price: number,
   value: number | null,
+  fairBand?: number | null,
 ): VerdictResult {
-  return saleVerdictCore(cfg, price, value) as VerdictResult;
+  return saleVerdictCore(cfg, price, value, fairBand) as VerdictResult;
 }

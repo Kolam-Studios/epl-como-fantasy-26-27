@@ -115,6 +115,22 @@ create table if not exists briefs (
   swept_at  timestamptz
 );
 
+-- Draft-morning reveal band (#70). The steal/fair/overpay verdict band is NOT a
+-- fixed config number: the valuations job (scripts/generate-valuations.mjs)
+-- calibrates it from the day's valuations and writes it here (singleton, id=1).
+-- The reveal/ledger read fair_band and fall back to config.valueBadgeThreshold
+-- when this row is absent - the AI must never block the auction, so a job that
+-- never ran degrades gracefully rather than breaking the verdict. The extra
+-- columns record how the band was derived, for the morning sanity check.
+create table if not exists valuation_meta (
+  id           integer primary key check (id = 1),
+  fair_band    integer,        -- +/- dollars within which a sale reads FAIR
+  band_pct     numeric,        -- fraction of the median valuation used
+  median_value integer,        -- median of the day's valuations
+  sample_size  integer,        -- how many valuations fed the calibration
+  generated_at timestamptz
+);
+
 -- End-of-night recap archive (#32). Leftover money (Y1) per manager after the
 -- August auction is a NUMBER OF RECORD under the season-economy model (#28): it
 -- becomes next February's war chest, so it must survive as a durable snapshot,

@@ -81,6 +81,10 @@ async function cleanup() {
   await sql`delete from lot_events where player_id in ${sql(IDS)}`;
   await sql`delete from sales where player_id in ${sql(IDS)}`;
   await sql`delete from valuations where player_id in ${sql(IDS)}`;
+  // The calibrated-band check (#70) writes the valuation_meta singleton; clear
+  // it here too so an interrupted standalone re-run does not inherit a stale
+  // band and spuriously flip the config-fallback verdict assertions.
+  await sql`delete from valuation_meta where id = 1`;
   await sql`delete from players where id in ${sql(IDS)}`;
   if (createdManagerIds.length) {
     await sql`delete from managers where id in ${sql(createdManagerIds)}`;
@@ -324,6 +328,24 @@ try {
     acc && acc.displayName === ACCENT_NAME && acc.name === ACCENT_NAME,
     acc ? `displayName="${acc.displayName}"` : "missing",
   );
+
+  // (l) CALIBRATED REVEAL BAND (#70): with no valuation_meta row the SOLD
+  //     fixture (601 vs 500, delta +101) reads OVERPAY off the config fallback
+  //     ($50). Writing a wider calibrated band ($150) must flip it to FAIR,
+  //     proving the ledger reads the band and not the hardcoded threshold.
+  await sql`
+    insert into valuation_meta (id, fair_band, band_pct, median_value, sample_size, generated_at)
+    values (1, 150, 0.15, 1000, 4, now())
+    on conflict (id) do update set fair_band = excluded.fair_band, generated_at = now()
+  `;
+  const banded = await buildPlayersPayload(sql, cfg);
+  const sBanded = banded.players.find((p) => p.id === SOLD_ID);
+  report(
+    "calibrated band ($150) flips the SOLD verdict OVERPAY -> FAIR (reads valuation_meta, not the $50 fallback)",
+    sBanded && sBanded.verdict === "FAIR" && sBanded.delta === SALE_PRICE_SOLD - SOLD_VALUE,
+    sBanded ? `verdict=${sBanded.verdict} delta=${sBanded.delta}` : "missing",
+  );
+  await sql`delete from valuation_meta where id = 1`;
 } catch (err) {
   console.error("test-players failed to run:", err.message);
   failed = true;

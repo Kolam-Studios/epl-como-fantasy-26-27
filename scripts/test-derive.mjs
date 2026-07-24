@@ -248,12 +248,37 @@ function ownedRows(managerId, count, total, positions) {
   eq("scarcity: default tiers stay silent on tier 3", scarcityAlerts(cfg, pool), []);
 }
 
-// --- v1 verdict logic ---
+// --- verdict logic (band from config fallback) ---
 {
   eq("verdict: overpay", saleVerdict(cfg, 800, 560), { delta: 240, pctOver: 240 / 560, verdict: "OVERPAY" });
   eq("verdict: steal", saleVerdict(cfg, 100, 300), { delta: -200, pctOver: -200 / 300, verdict: "STEAL" });
   eq("verdict: fair within band", saleVerdict(cfg, 150, 120), { delta: 30, pctOver: 30 / 120, verdict: "FAIR" });
   eq("verdict: no valuation -> nulls", saleVerdict(cfg, 150, null), { delta: null, pctOver: null, verdict: null });
+}
+
+// --- verdict logic: calibrated band overrides the config fallback (#70) ---
+{
+  // delta +101 (601 vs 500): config band 50 -> OVERPAY, but a calibrated 150
+  // band widens FAIR to cover it.
+  eq("verdict: config band (50) -> OVERPAY", saleVerdict(cfg, 601, 500),
+    { delta: 101, pctOver: 101 / 500, verdict: "OVERPAY" });
+  eq("verdict: calibrated band 150 widens FAIR", saleVerdict(cfg, 601, 500, 150),
+    { delta: 101, pctOver: 101 / 500, verdict: "FAIR" });
+  // A tighter calibrated band narrows FAIR: delta 30 was FAIR at 50, OVERPAY at 10.
+  eq("verdict: calibrated band 10 narrows FAIR to OVERPAY", saleVerdict(cfg, 150, 120, 10),
+    { delta: 30, pctOver: 30 / 120, verdict: "OVERPAY" });
+  // Band exactly 0: only an exact hit reads FAIR; +1 tips to OVERPAY.
+  eq("verdict: band 0, exact hit is FAIR", saleVerdict(cfg, 200, 200, 0),
+    { delta: 0, pctOver: 0, verdict: "FAIR" });
+  eq("verdict: band 0, off by one is OVERPAY", saleVerdict(cfg, 201, 200, 0),
+    { delta: 1, pctOver: 1 / 200, verdict: "OVERPAY" });
+  // Invalid bands fall back to the config threshold (50).
+  eq("verdict: negative band falls back to config", saleVerdict(cfg, 601, 500, -5),
+    { delta: 101, pctOver: 101 / 500, verdict: "OVERPAY" });
+  eq("verdict: NaN band falls back to config", saleVerdict(cfg, 150, 120, NaN),
+    { delta: 30, pctOver: 30 / 120, verdict: "FAIR" });
+  eq("verdict: null band falls back to config", saleVerdict(cfg, 150, 120, null),
+    { delta: 30, pctOver: 30 / 120, verdict: "FAIR" });
 }
 
 // --- displayNames: unique on-screen labels (#44) ---
