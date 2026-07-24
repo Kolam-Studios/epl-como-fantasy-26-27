@@ -61,12 +61,9 @@ that position. There is no carry-over cap.
 
 ## Open questions (decide before v2 build)
 
-1. Dropped player: does a won-then-dropped player go to the second-highest
-   bidder, or straight back to the pool?
-2. Monthly rollover: how the window behaves in a month with no bids in it.
-3. Waiver window tie-break rule.
-4. Rebid date: exact date in early February.
-5. Roster shape between auctions: does 2 GK / 5 DEF / 5 MID / 3 FWD hold
+1. Waiver window tie-break rule.
+2. Rebid date: exact date in early February.
+3. Roster shape between auctions: does 2 GK / 5 DEF / 5 MID / 3 FWD hold
    through waivers?
 
 Resolved 9 Jul by the league owner: no retention cap (retain whatever you can
@@ -75,9 +72,11 @@ afford); no carry-over cap (banking money is an intended reward).
 Resolved on the rules review call: injection amounts are $500 / $2,000 / $500
 (all settled; the $500 windows are per-window totals, not per month); waivers
 are monthly sealed blind-bid windows with per-manager token logins, no
-per-window bid cap, win-all-you-win, and an optional drop back to the pool
-(see the Waivers section). Trades are free and year-round with a group veto
-vote (details in docs/PRD.md and the rulebook).
+per-window bid cap, win-all-you-win. A won-then-dropped player goes **back to
+the pool** for the next round and the winning bid is **spent - no refund**. A
+month with **no bids is simply a quiet month** - no rollover mechanic (unspent
+budget just stays in the wallet). Trades are free and year-round with a group
+veto vote (details in docs/PRD.md and the rulebook).
 
 ## Consequences for the build
 

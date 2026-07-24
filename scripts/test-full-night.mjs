@@ -297,13 +297,28 @@ try {
   `;
 
   const initialVersion = await currentVersion();
+  // Phase-2-only tiers (Tier 5, the $1 cheap band) are NOT offered in phase 1;
+  // they are nominated in phase 2. The phase-1 queue therefore covers the pool
+  // minus those tiers.
+  const phase2TierSet = new Set(
+    cfg.tiers.filter((t) => t.phase2Only === true).map((t) => t.tier),
+  );
+  const phase1PlayerCount = allPlayerRows.filter((p) => !phase2TierSet.has(p.tier)).length;
+  const phase2OnlyCount = allPlayerRows.length - phase1PlayerCount;
   const build = await buildQueue(sql, cfg, { actor: ACTOR, rng: mulberry32(424242) });
   report(
-    "buildQueue succeeds over the full real pool",
-    build.ok === true && build.queue.length === allPlayerRows.length,
-    build.ok ? `${build.queue.length} lots` : `${build.code}: ${build.message}`,
+    "buildQueue covers every phase-1 (non phase-2-only) player exactly once",
+    build.ok === true && build.queue.length === phase1PlayerCount,
+    build.ok
+      ? `${build.queue.length} lots (pool ${allPlayerRows.length}, ${phase2OnlyCount} held for phase-2 nomination)`
+      : `${build.code}: ${build.message}`,
   );
   if (!build.ok) throw new Error(`buildQueue failed: ${build.code}: ${build.message}`);
+  report(
+    "no phase-2-only-tier player is in the phase-1 queue",
+    build.queue.every((id) => !phase2TierSet.has(playersById.get(id)?.tier)),
+    `${phase2OnlyCount} phase-2-only players`,
+  );
   actionCount++;
 
   let current = build.firstPlayerId;

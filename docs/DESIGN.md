@@ -50,7 +50,7 @@ PHASE 2 (nomination rotation)
 
 ## The max-bid rule (the one bit of real logic)
 
-A manager's **max legal bid on the current lot** is position-aware and reserves the **minimum opening bid** (the lowest tier's open, $5 by default, config-driven - NOT $1) for each of their other open slots:
+A manager's **max legal bid on the current lot** is position-aware and reserves the **minimum opening bid** (the lowest tier's open, $1 with Tier 5, config-driven) for each of their other open slots:
 
 ```
 openSlotThisPosition = squad[pos] - filled[m][pos]        // must be > 0 to bid at all
@@ -67,7 +67,7 @@ So a manager with money but no empty GK slot **cannot** bid on a GK. When a mana
 1. Player is the current lot (or the phase-2 nominated player) and is **not already sold** (exclusive ownership, DB constraint).
 2. Winner has an **open slot for that position** and a free squad slot overall.
 3. `price >= tier opening bid` and `price <= maxBid(winner)`.
-4. Rejections explain themselves in plain words on the console (e.g. "Over M3's max bid of $1,190 - they must keep $5 per open slot").
+4. Rejections explain themselves in plain words on the console (e.g. "Over M3's max bid of $1,198 - they must keep $1 per open slot").
 
 ## States and edge cases
 

@@ -17,7 +17,8 @@
     { "tier": 1, "minFplPrice": 12.0, "openBid": 50 },
     { "tier": 2, "minFplPrice": 9.0, "openBid": 25 },
     { "tier": 3, "minFplPrice": 7.0, "openBid": 10 },
-    { "tier": 4, "minFplPrice": 0, "openBid": 5 }
+    { "tier": 4, "minFplPrice": 5.6, "openBid": 5 },
+    { "tier": 5, "minFplPrice": 0, "openBid": 1, "phase2Only": true }
   ],
   "bidIncrement": null,
   "valueBadgeThreshold": 50,
@@ -29,7 +30,7 @@
     "managers": "PUBLIC REPO: placeholder names only. Put the real 26/27 roster in a gitignored league.config.local.json (same shape) on the machine running the draft; it is deep-merged over this file at runtime (arrays replace wholesale). Manager count derives from the array length.",
     "budget": "Auction dollars per manager for the whole draft.",
     "squad": "Slots per position each manager must fill; squad size derives from the sum. Position keys map to FPL element_type: GK=1, DEF=2, MID=3, FWD=4.",
-    "tiers": "Ordered highest minFplPrice first. A player's tier is the first band whose minFplPrice <= the player's FPL price; the last band must have minFplPrice 0 so every player lands somewhere. openBid is the minimum opening bid for that tier; the lowest tier's openBid is the league-wide reserve (min open).",
+    "tiers": "Ordered highest minFplPrice first. A player's tier is the first band whose minFplPrice <= the player's FPL price; the last band must have minFplPrice 0 so every player lands somewhere. openBid is the minimum opening bid for that tier; the lowest tier's openBid is the league-wide reserve (min open). A tier with phase2Only:true is never offered in phase 1 - its players are bid for by nomination in phase 2 only (Tier 5, the $1 cheap band).",
     "bidIncrement": "null = voice bidding, no enforced increment in v1. Set a number to enforce a minimum raise.",
     "valueBadgeThreshold": "Post-sale badge: flag a sale as value/overpay when hammer price differs from the sealed AI valuation by at least this many dollars.",
     "scarcityThreshold": "Board alert when the remaining pool for a position drops to this many players per unfilled slot.",

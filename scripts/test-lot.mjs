@@ -270,12 +270,19 @@ try {
       id: r.id, tier: r.tier,
     }));
     const tierById = new Map(allIds.map((p) => [p.id, p.tier]));
+    // Phase-2-only tiers (Tier 5) are held back for phase-2 nomination, so the
+    // phase-1 queue covers the pool minus those tiers.
+    const phase2TierSet = new Set(
+      cfg.tiers.filter((t) => t.phase2Only === true).map((t) => t.tier),
+    );
+    const phase1Ids = allIds.filter((p) => !phase2TierSet.has(p.tier));
     const q1 = build1.ok ? build1.queue : [];
     report(
-      "queue covers every player exactly once",
-      q1.length === allIds.length && new Set(q1).size === q1.length &&
-        allIds.every((p) => q1.includes(p.id)),
-      `queue ${q1.length}, pool ${allIds.length}`,
+      "queue covers every phase-1 player exactly once (phase-2-only tiers excluded)",
+      q1.length === phase1Ids.length && new Set(q1).size === q1.length &&
+        phase1Ids.every((p) => q1.includes(p.id)) &&
+        q1.every((id) => !phase2TierSet.has(tierById.get(id))),
+      `queue ${q1.length}, phase-1 pool ${phase1Ids.length}, full pool ${allIds.length}`,
     );
     let tiersOrdered = true;
     for (let i = 1; i < q1.length; i++) {
@@ -315,7 +322,7 @@ try {
       "two builds with different rng seeds shuffle within tier differently",
       build2.ok && q2.length === q1.length &&
         JSON.stringify(q1) !== JSON.stringify(q2) &&
-        new Set(q2).size === q2.length && allIds.every((p) => q2.includes(p.id)),
+        new Set(q2).size === q2.length && phase1Ids.every((p) => q2.includes(p.id)),
       "same id set, different order",
     );
 
@@ -510,11 +517,15 @@ try {
   `;
 
   // Unoffered players remain (T2/T3/T4 fixtures have no events, plus any real
-  // unsold pool): reject, naming the count.
+  // unsold pool): reject, naming the count. Phase-2-only tiers (Tier 5) are
+  // never offered in phase 1, so they are excluded from the count - matching
+  // endPhaseOne's own query.
+  const phase2Tiers = cfg.tiers.filter((t) => t.phase2Only === true).map((t) => t.tier);
   const [{ n: unofferedCount }] = await sql`
     select count(*)::int as n from players p
     where not exists (select 1 from sales s where s.player_id = p.id)
       and not exists (select 1 from lot_events e where e.player_id = p.id)
+      ${phase2Tiers.length ? sql`and (p.tier is null or p.tier <> all(${phase2Tiers}))` : sql``}
   `;
   const ep1 = await endPhaseOne(sql, cfg, { actor: ACTOR });
   expectReject("endPhaseOne with unoffered players rejects", ep1, "players_unoffered");

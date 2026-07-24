@@ -12,6 +12,7 @@ import {
   buildConfig,
   minOpenBid,
   openBidFor,
+  phase2OnlyTiers,
   selectLocalOverride,
   squadSize,
   tierFor,
@@ -62,7 +63,7 @@ check("local override: budget replaced, managers array replaced wholesale", () =
   assertEqual(cfg.managers, ["Alpha", "Beta", "Gamma"], "managers");
   // untouched keys survive from base
   assertEqual(cfg.season, "26/27", "season");
-  assertEqual(cfg.tiers.length, 4, "tiers length");
+  assertEqual(cfg.tiers.length, 5, "tiers length");
 });
 
 check("local override: nested object merges recursively", () => {
@@ -244,21 +245,31 @@ check("a valid file is NOT rejected because the env var is malformed (file wins 
   assertEqual(cfg.managers, ["File A"], "file managers survive the bad env var");
 });
 
-// (d) tierFor with the default bands
-check("tierFor: 12.5 -> 1, 9.0 -> 2, 8.9 -> 3, 4.0 -> 4", () => {
+// (d) tierFor with the default bands (five tiers; Tier 5 is 5.5 and under)
+check("tierFor: 12.5->1, 9.0->2, 8.9->3, 6.0->4, 5.6->4, 5.5->5, 4.0->5", () => {
   const cfg = buildConfig(base());
   assertEqual(tierFor(cfg, 12.5), 1, "12.5");
   assertEqual(tierFor(cfg, 9.0), 2, "9.0");
   assertEqual(tierFor(cfg, 8.9), 3, "8.9");
-  assertEqual(tierFor(cfg, 4.0), 4, "4.0");
+  assertEqual(tierFor(cfg, 6.0), 4, "6.0");
+  assertEqual(tierFor(cfg, 5.6), 4, "5.6");
+  assertEqual(tierFor(cfg, 5.5), 5, "5.5");
+  assertEqual(tierFor(cfg, 4.0), 5, "4.0");
 });
 
-// (e) minOpenBid + openBidFor
-check("minOpenBid is 5 and openBidFor matches each band", () => {
+// (e) minOpenBid + openBidFor (lowest tier is now Tier 5 at $1)
+check("minOpenBid is 1 and openBidFor matches each band", () => {
   const cfg = buildConfig(base());
-  assertEqual(minOpenBid(cfg), 5, "minOpenBid");
+  assertEqual(minOpenBid(cfg), 1, "minOpenBid");
   assertEqual(openBidFor(cfg, 1), 50, "tier 1");
   assertEqual(openBidFor(cfg, 4), 5, "tier 4");
+  assertEqual(openBidFor(cfg, 5), 1, "tier 5");
+});
+
+// (f) phase2OnlyTiers: Tier 5 is nomination-only, the rest are phase 1
+check("phase2OnlyTiers returns [5] for the default config", () => {
+  const cfg = buildConfig(base());
+  assertEqual(phase2OnlyTiers(cfg), [5], "phase2OnlyTiers");
 });
 
 if (failures > 0) {

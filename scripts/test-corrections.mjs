@@ -400,9 +400,12 @@ try {
     saleId: saleMid, managerId: managerIds[SLOT_POOR], reason: "wrong buyer", actor: ACTOR,
   });
   expectReject("manager change past the new manager's max bid rejects", overBudget, "over_max_bid");
+  // The poor manager has $40 left and 4 OTHER open slots. With the league-wide
+  // minimum opening bid now $1 (Tier 5), the reserve is $1 x 4 = $4, so max bid
+  // = $40 - $4 = $36. (Was $20 when the minimum opening bid was $5.)
   report(
-    "budget message names the new manager's max bid ($20)",
-    overBudget.ok === false && overBudget.message.includes("$20"),
+    "budget message names the new manager's max bid ($36)",
+    overBudget.ok === false && overBudget.message.includes("$36"),
     overBudget.message,
   );
 
