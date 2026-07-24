@@ -470,9 +470,13 @@ footer { margin-top: 20px; color: var(--muted); font-size: 12px; }
 .ledcell { flex: 1; background: var(--card); padding: 6px 30px 0; min-height: 0; overflow-y: auto; }
 table.led { border-collapse: collapse; width: 100%; font-size: 19px; }
 .led th { font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 14px 14px 10px; border-bottom: 1px solid var(--hair); position: sticky; top: 0; background: var(--card); }
-.led th:nth-child(1), .led th:nth-child(2) { text-align: left; }
+/* Left-align the identity block (Owner, #, Player, Club); numeric columns stay right. */
+.led th:nth-child(-n+4) { text-align: left; }
 .led td { padding: 6.5px 14px; border-bottom: 1px solid var(--hair); text-align: right; white-space: nowrap; }
-.led td:nth-child(1), .led td:nth-child(2) { text-align: left; }
+.led td:nth-child(-n+4) { text-align: left; }
+/* Owner cell (#69): coloured per owner, consistent with OWNER_COLORS. */
+.led .owncell { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.led .owndot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
 .led .pcell { display: flex; align-items: center; gap: 12px; font-weight: 500; }
 .led .thumb { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--chip); }
 .led .cdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }

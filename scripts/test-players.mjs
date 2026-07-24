@@ -221,6 +221,15 @@ try {
     t ? `owner=${t.ownerSlot} price=${t.price} value=${t.value}` : "missing",
   );
 
+  // (e2) bid-order sequence (#69): dense 1..N over current sales by lot_no.
+  //      SOLD has lot_no 9991 (the lower), TRADED 9992, so seq 1 then 2. The
+  //      sequence stays keyed to the player through the trade; unsold has none.
+  report(
+    "sold/traded fixtures carry dense bid-order seq (1, 2); unsold carries none",
+    s && s.seq === 1 && t && t.seq === 2 && u && u.seq === null,
+    `sold=${s?.seq} traded=${t?.seq} unsold=${u?.seq}`,
+  );
+
   // (f) squad membership agrees with the trade: m2 owns TRADED, m1 owns SOLD only.
   const m1sq = mgr.get(1)?.squadPlayerIds ?? [];
   const m2sq = mgr.get(2)?.squadPlayerIds ?? [];

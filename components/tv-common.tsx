@@ -95,6 +95,27 @@ export function clubDot(teamShort: string | null | undefined): string {
   return washForClub(clubColors as never, teamShort ?? null)?.bandFrom ?? "var(--muted)";
 }
 
+// 8 distinct owner colours keyed by manager slot (#69), so every surface tags
+// a given owner with the same colour. Picked to stay legible on both the
+// eggshell room ground and the charcoal console, and to be distinguishable
+// from each other. v1 is a fixed 8-manager league; a slot beyond 8 wraps.
+export const OWNER_COLORS = [
+  "#2f6fd0", // blue
+  "#d1495b", // red
+  "#1f9e6e", // green
+  "#c07f00", // amber
+  "#7d4fd1", // violet
+  "#0f8ea8", // teal
+  "#dd5f22", // orange
+  "#b5397f", // magenta
+] as const;
+
+/** Owner colour for a manager slot (1-based); neutral grey when there is no owner. */
+export function ownerColor(slot: number | null | undefined): string {
+  if (slot == null || slot < 1) return "var(--muted)";
+  return OWNER_COLORS[(slot - 1) % OWNER_COLORS.length];
+}
+
 /**
  * Scale the 1600-wide board to the frame width. GUARDS against zero width: a
  * background-tab load measures clientWidth 0, and scale(0) renders a blank

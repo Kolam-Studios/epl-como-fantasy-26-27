@@ -25,6 +25,8 @@ export interface PlayerRow {
   fplPrice: number | null;
   pts: number | null;
   sold: boolean;
+  /** Per-sale bid-order sequence (#69), dense 1..N over current sales. Null if unsold. */
+  seq: number | null;
   /** Current owner (post-trade). Null for unsold players. */
   ownerSlot: number | null;
   ownerShort: string | null;

@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersPayload } from "@/lib/players";
-import { PL_PHOTO, PhoneNav, SILHOUETTE, abbr, clubDot, money, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
+import { PL_PHOTO, PhoneNav, SILHOUETTE, abbr, clubDot, money, ownerColor, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
 /** The read-only spotlight route for a player row (#51). */
 function playerHref(id: number): string {
@@ -42,6 +42,23 @@ function Row({ p }: { p: PlayerRow }) {
   };
   return (
     <tr className="pd-rowlink" onClick={onRowClick} data-testid={`ledger-row-${p.id}`}>
+      <td className={p.ownerShort ? "" : "mut"}>
+        {p.ownerShort ? (
+          <span className="owncell" style={{ color: ownerColor(p.ownerSlot) }}>
+            <span className="owndot" style={{ background: ownerColor(p.ownerSlot) }} />
+            {p.ownerSlot != null ? (
+              <Link className="pd-namelink" href={`/manager/${p.ownerSlot}`} onClick={(e) => e.stopPropagation()}>
+                {abbr(p.ownerShort)}
+              </Link>
+            ) : (
+              abbr(p.ownerShort)
+            )}
+          </span>
+        ) : (
+          "-"
+        )}
+      </td>
+      <td className="mut">{p.seq ?? "-"}</td>
       <td>
         <span className="pcell">
           <img
@@ -64,19 +81,6 @@ function Row({ p }: { p: PlayerRow }) {
       <td>{p.tier ?? "-"}</td>
       <td>{p.fplPrice != null ? `£${p.fplPrice}` : "-"}</td>
       <td>{p.pts ?? "-"}</td>
-      <td className={p.ownerShort ? "" : "mut"}>
-        {p.ownerShort ? (
-          p.ownerSlot != null ? (
-            <Link className="pd-namelink" href={`/manager/${p.ownerSlot}`} onClick={(e) => e.stopPropagation()}>
-              {abbr(p.ownerShort)}
-            </Link>
-          ) : (
-            abbr(p.ownerShort)
-          )
-        ) : (
-          "-"
-        )}
-      </td>
       <td>{p.sold ? money(p.price) : "-"}</td>
       <td>
         {!p.sold ? (
@@ -178,8 +182,16 @@ function PhoneLedgerRow({ p }: { p: PlayerRow }) {
         <div style={{ minWidth: 0 }}>
           <div className="ph-ledger-name">{p.displayName ?? p.name ?? "?"}</div>
           <div className="ph-sub">
+            {p.seq != null ? `#${p.seq} · ` : ""}
             {p.teamShort ?? "?"} / {p.position} / T{p.tier ?? "?"}
-            {p.ownerShort ? ` · ${abbr(p.ownerShort)}` : ""}
+            {p.ownerShort ? (
+              <>
+                {" · "}
+                <span style={{ color: ownerColor(p.ownerSlot), fontWeight: 700 }}>
+                  {abbr(p.ownerShort)}
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
       </div>
@@ -303,13 +315,14 @@ export default function LedgerView() {
               <table className="led">
                 <thead>
                   <tr>
+                    <th>Owner</th>
+                    <th>#</th>
                     <th>Player</th>
                     <th>Club</th>
                     <th>Pos</th>
                     <th>Tier</th>
                     <th>FPL £</th>
                     <th>&apos;25 pts</th>
-                    <th>Owner</th>
                     <th>Paid</th>
                     <th>Claude</th>
                     <th>&Delta;</th>
