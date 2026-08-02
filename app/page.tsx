@@ -151,10 +151,6 @@ function crestErr(e: React.SyntheticEvent<HTMLImageElement>) {
   el.style.display = "none";
 }
 
-function verdictPill(v: string | null): string {
-  return v === "STEAL" ? "up" : v === "OVERPAY" ? "down" : "flat";
-}
-
 // ---- Phone layout: a calm "what's happening now" glance, not a shrunk TV
 // canvas. Always shows the live auction status regardless of tvView (squads/
 // ledger/reveal/paused are TV-only concerns on a phone). ----------------
@@ -212,7 +208,6 @@ function PhoneBoard({ payload, connected }: { payload: StatePayload | null; conn
                 <span className="ph-pm">&rarr; {abbr(s.managerShort)}</span>
                 <span className="ph-pp">
                   {money(s.price)}
-                  {s.verdict && <span className={`pill ${verdictPill(s.verdict)}`} style={{ marginLeft: 8 }}>{s.verdict}</span>}
                 </span>
               </div>
             ))}
@@ -437,7 +432,6 @@ export default function Board() {
                       </div>
                     )}
                     <span className="spacer" />
-                    <div className="b-sealline">Claude value - sealed until the hammer</div>
                   </div>
                 </>
               ) : (
@@ -463,7 +457,6 @@ export default function Board() {
                       <span className="pm">&rarr; {abbr(s.managerShort)}</span>
                       <span className="pp">
                         {money(s.price)}
-                        {s.verdict && <span className={`pill ${verdictPill(s.verdict)}`} style={{ marginLeft: 8 }}>{s.verdict}</span>}
                       </span>
                     </li>
                   ))}
