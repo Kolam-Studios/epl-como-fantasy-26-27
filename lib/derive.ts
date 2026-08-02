@@ -5,6 +5,7 @@
 
 import type { LeagueConfig, Position } from "./config";
 import {
+  auctionSpendByManager as auctionSpendByManagerCore,
   deriveManager as deriveManagerCore,
   deriveManagers as deriveManagersCore,
   gradingTertiles as gradingTertilesCore,
@@ -90,12 +91,20 @@ export function tradeCashByManager(
   return tradeCashByManagerCore(tradeRows) as Record<number, number>;
 }
 
+/** Sum of each manager's own auction purchases (sunk spend, never refunded). */
+export function auctionSpendByManager(
+  saleRows: Array<{ managerId: number; price: number }>,
+): Record<number, number> {
+  return auctionSpendByManagerCore(saleRows) as Record<number, number>;
+}
+
 export function deriveManager(
   cfg: LeagueConfig,
   owned: OwnedPlayer[],
   cashOut = 0,
+  auctionSpend = 0,
 ): ManagerDerived {
-  return deriveManagerCore(cfg, owned, cashOut) as ManagerDerived;
+  return deriveManagerCore(cfg, owned, cashOut, auctionSpend) as ManagerDerived;
 }
 
 export function deriveManagers(
@@ -103,8 +112,9 @@ export function deriveManagers(
   managers: ManagerRow[],
   ownership: OwnedPlayer[],
   cashByManager: Record<number, number> = {},
+  auctionByManager: Record<number, number> = {},
 ): Array<ManagerRow & ManagerDerived & { managerId: number }> {
-  return deriveManagersCore(cfg, managers, ownership, cashByManager) as Array<
+  return deriveManagersCore(cfg, managers, ownership, cashByManager, auctionByManager) as Array<
     ManagerRow & ManagerDerived & { managerId: number }
   >;
 }

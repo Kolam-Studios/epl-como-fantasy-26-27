@@ -2,6 +2,7 @@
 // Usage: node scripts/test-derive.mjs
 import { buildConfig } from "../lib/config-core.mjs";
 import {
+  auctionSpendByManager,
   deriveManager,
   deriveManagers,
   displayNames,
@@ -70,19 +71,19 @@ function ownedRows(managerId, count, total, positions) {
 // remaining 1210, 5 open slots (10 owned, spent 1790) -> maxBid 1190
 {
   const owned = ownedRows(1, 10, 1790, ["GK", "GK", "DEF", "DEF", "DEF", "DEF", "DEF", "MID", "MID", "MID"]);
-  const d = deriveManager(cfg, owned);
+  const d = deriveManager(cfg, owned, 0, 1790); // no trades: auction spend = owned total
   eq("maxBid: remaining 1210, 5 open -> 1190", [d.remaining, d.openSlots, d.maxBid], [1210, 5, 1190]);
 }
 
 // remaining 983, 2 open slots (13 owned, spent 2017) -> maxBid 978
 {
-  const d = deriveManager(cfg, ownedRows(2, 13, 2017, ["GK", "GK", "DEF", "DEF", "DEF", "DEF", "DEF", "MID", "MID", "MID", "MID", "MID", "FWD"]));
+  const d = deriveManager(cfg, ownedRows(2, 13, 2017, ["GK", "GK", "DEF", "DEF", "DEF", "DEF", "DEF", "MID", "MID", "MID", "MID", "MID", "FWD"]), 0, 2017);
   eq("maxBid: remaining 983, 2 open -> 978", [d.remaining, d.openSlots, d.maxBid], [983, 2, 978]);
 }
 
 // remaining 333, 8 open slots (7 owned, spent 2667) -> maxBid 298
 {
-  const d = deriveManager(cfg, ownedRows(3, 7, 2667, ["GK", "DEF", "DEF", "MID", "MID", "FWD", "FWD"]));
+  const d = deriveManager(cfg, ownedRows(3, 7, 2667, ["GK", "DEF", "DEF", "MID", "MID", "FWD", "FWD"]), 0, 2667);
   eq("maxBid: remaining 333, 8 open -> 298", [d.remaining, d.openSlots, d.maxBid], [333, 8, 298]);
 }
 
@@ -102,8 +103,9 @@ function ownedRows(managerId, count, total, positions) {
 // --- deriveManagers: a manager with no purchases gets a full clean row ---
 {
   const managers = [{ id: 10, slot: 1, short: "M1" }, { id: 11, slot: 2, short: "M2" }];
-  const ownership = resolveOwnership(ownedRows(10, 1, 100, ["MID"]));
-  const [m1, m2] = deriveManagers(cfg, managers, ownership);
+  const sales = ownedRows(10, 1, 100, ["MID"]);
+  const ownership = resolveOwnership(sales);
+  const [m1, m2] = deriveManagers(cfg, managers, ownership, {}, auctionSpendByManager(sales));
   eq("deriveManagers: buyer numbers", [m1.spent, m1.remaining, m1.openSlots], [100, 2900, 14]);
   eq("deriveManagers: empty manager numbers", [m2.spent, m2.remaining, m2.openSlots, m2.maxBid], [0, 3000, 15, 3000 - 5 * 14]);
 }
@@ -155,17 +157,18 @@ function ownedRows(managerId, count, total, positions) {
   eq("tradeCash: net cash out per manager", [net[1], net[2]], [150, -150]);
 }
 
-// --- deriveManager: cashOut folds into spend ---
+// --- deriveManager: auction spend (sunk) + cashOut fold into spend ---
 {
   const owned = ownedRows(1, 1, 500, ["MID"]);
-  const d = deriveManager(cfg, owned, 150); // paid 150 net cash out
+  const d = deriveManager(cfg, owned, 150, 500); // $500 auction buy, paid 150 net cash out
   eq("deriveManager: cashOut adds to spend", [d.spent, d.remaining], [650, 2350]);
-  const r = deriveManager(cfg, owned, -200); // received 200 net cash
+  const r = deriveManager(cfg, owned, -200, 500); // $500 auction buy, received 200 net cash
   eq("deriveManager: cash received lifts remaining", [r.spent, r.remaining], [300, 2700]);
 }
 
-// --- integration: salary travel + cash, conserved across both managers ---
-// manager 1 trades its $500 player to manager 2 for $200 cash (2 pays 1).
+// --- integration: NO refund on a trade - the auction spend is sunk. Cash and
+// ownership move; the seller's original outlay stays spent (issue: draft-day). ---
+// manager 1 trades its $500 auction buy to manager 2 for $200 cash (2 pays 1).
 {
   const managers = [{ id: 1, slot: 1, short: "M1" }, { id: 2, slot: 2, short: "M2" }];
   const sales = [
@@ -177,11 +180,14 @@ function ownedRows(managerId, count, total, positions) {
     { playerId: 100, fromManager: 1, toManager: 2, seq: 1 },
   ]);
   const cash = tradeCashByManager(trades);
-  const [m1, m2] = deriveManagers(cfg, managers, ownership, cash);
-  // manager 1: no players, received $200 -> spent -200, remaining 3200, 15 open.
-  eq("integration: seller after trade", [m1.spent, m1.remaining, m1.openSlots], [-200, 3200, 15]);
-  // manager 2: owns both salaries ($800) + paid $200 -> spent 1000, remaining 2000, 13 open.
-  eq("integration: buyer after trade", [m2.spent, m2.remaining, m2.openSlots], [1000, 2000, 13]);
+  const auction = auctionSpendByManager(sales);
+  const [m1, m2] = deriveManagers(cfg, managers, ownership, cash, auction);
+  // manager 1: bought at $500, sold for $200 -> NOT refunded; spent 300 (sunk 500
+  // less 200 received), remaining 2700, owns nothing so 15 open.
+  eq("integration: seller after trade", [m1.spent, m1.remaining, m1.openSlots], [300, 2700, 15]);
+  // manager 2: own $300 auction buy + $200 cash for the traded-in player -> spent
+  // 500 (does NOT inherit the $500 salary), remaining 2500, 13 open.
+  eq("integration: buyer after trade", [m2.spent, m2.remaining, m2.openSlots], [500, 2500, 13]);
   // conservation: remaining sums unchanged by the trade (5200 before and after).
   eq("integration: total remaining conserved", m1.remaining + m2.remaining, 5200);
 }

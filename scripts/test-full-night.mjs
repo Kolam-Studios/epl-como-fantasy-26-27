@@ -253,6 +253,10 @@ try {
   // of truth at the end (in-memory vs raw DB vs the app's own derivation).
   // ------------------------------------------------------------------
   const ownedByManager = new Map(managers.map((m) => [m.id, []]));
+  // Spend is a manager's own auction purchases (sunk) + net trade cash; this run
+  // has no trades, so each manager's spend is simply their owned auction total.
+  const derivedFor = (owned) =>
+    deriveManager(cfg, owned, 0, owned.reduce((s, p) => s + p.price, 0));
   const soldSet = new Set();
   let actionCount = 0; // every successful buildQueue/recordSale/noBid/endPhaseOne/nominate call
   let phase1Sales = 0;
@@ -264,7 +268,7 @@ try {
     return Math.max(0, cfg.squad[position] - Math.min(PHASE1_RESERVE, cfg.squad[position]));
   }
   function phase1Eligible(managerId, position, price) {
-    const derived = deriveManager(cfg, ownedByManager.get(managerId));
+    const derived = derivedFor(ownedByManager.get(managerId));
     if (!isEligible(cfg, derived, position)) return false;
     if (price > derived.maxBid) return false;
     if (derived.fills[position] >= phase1Cap(position)) return false;
@@ -356,7 +360,7 @@ try {
       // (b) Above the buyer's max bid - the money boundary this app is built
       // around. managers[0] owns nothing yet, so their maxBid is the full
       // budget minus the reserve per open slot; one dollar over must reject.
-      const maxBid0 = deriveManager(cfg, ownedByManager.get(managers[0].id)).maxBid;
+      const maxBid0 = derivedFor(ownedByManager.get(managers[0].id)).maxBid;
       const overMax = await recordSale(sql, cfg, {
         playerId: current, managerId: managers[0].id, price: maxBid0 + 1, actor: ACTOR,
       });
@@ -444,7 +448,7 @@ try {
   let phase2Iterations = 0;
 
   function allSquadsComplete() {
-    return managers.every((m) => deriveManager(cfg, ownedByManager.get(m.id)).squadComplete);
+    return managers.every((m) => derivedFor(ownedByManager.get(m.id)).squadComplete);
   }
 
   while (!allSquadsComplete()) {
@@ -461,7 +465,7 @@ try {
     const nominator = managers.find((m) => m.slot === turn);
     if (!nominator) throw new Error(`No manager at nomination slot ${turn}.`);
 
-    const derived = deriveManager(cfg, ownedByManager.get(nominator.id));
+    const derived = derivedFor(ownedByManager.get(nominator.id));
     const neededPositions = POSITIONS.filter((pos) => derived.fills[pos] < cfg.squad[pos]);
     if (neededPositions.length === 0) {
       throw new Error(
@@ -555,7 +559,7 @@ try {
   for (const m of managers) {
     const raw = rawByManager.get(m.id);
     const totalRaw = POSITIONS.reduce((sum, pos) => sum + raw.fills[pos], 0);
-    const inMemory = deriveManager(cfg, ownedByManager.get(m.id));
+    const inMemory = derivedFor(ownedByManager.get(m.id));
     const payload = payloadByManager.get(m.id);
 
     const exactlyFull =

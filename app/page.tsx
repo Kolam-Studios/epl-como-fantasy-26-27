@@ -271,7 +271,11 @@ export default function Board() {
   const lot = payload?.currentLot ?? null;
   const lotPos: Pos | null = (lot?.position as Pos | undefined) ?? null;
   const wash = lot ? washForClub(clubColors as never, lot.teamShort) : null;
-  const reveal = payload && payload.tvView === "reveal" ? payload.reveal : null;
+  // Board reveal takeover removed (draft-day): the full-screen overlay raced
+  // with the next-lot handoff and half-rendered until a manual refresh. The
+  // sealed value + verdict now surface on the ledger, squads and recap pages;
+  // the board flicks straight to the next lot and "Recently sold" still shows
+  // the price + verdict.
 
   const tierKeys: number[] = payload
     ? Array.from(new Set(POSITIONS.flatMap((p) => Object.keys(payload.pool[p] ?? {}).map(Number)))).sort((a, b) => a - b)
@@ -539,19 +543,9 @@ export default function Board() {
               })}
             </div>
 
-            {/* reveal takeover */}
-            {reveal && (
-              <div className="b-reveal" data-testid="reveal">
-                <div className="rp">{reveal.displayName} &rarr; {abbr(reveal.managerShort)}</div>
-                <div className="rprice">Paid {money(reveal.price)}</div>
-                <div className="rseal">Claude value {reveal.value == null ? "pending" : money(reveal.value)}</div>
-                {reveal.verdict && (
-                  <div className={`pill ${verdictPill(reveal.verdict)}`} style={{ fontSize: 22, padding: "4px 18px" }}>
-                    {reveal.verdict}{reveal.delta != null ? ` ${money(reveal.delta)}` : ""}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* reveal takeover removed (draft-day): it raced with the next-lot
+                handoff and half-rendered until refresh. Value + verdict live on
+                the ledger, squads and recap; the board just flicks to next. */}
           </div>
         )}
       </div>

@@ -175,11 +175,14 @@ try {
   const t1 = await recordTrade(sql, cfg, { managerA: A, managerB: B, playersAToB: [P_A_MID], cashBToA: 200, reason: "swap", actor: ACTOR });
   report("happy: trade recorded", t1.ok === true, t1.ok ? `tradeId ${t1.tradeId}` : t1.message);
   report("happy: version bumped exactly once", (await version()) === vBeforeTrade + 1, `${vBeforeTrade} -> ${await version()}`);
-  // Salary travels ($500 leaves A, lands on B); cash settles ($200 to A).
-  report("happy: A remaining 2900 (owns $300, +$200 cash)", (await remainingOf(A)) === 2900, `${await remainingOf(A)}`);
-  report("happy: B remaining 1900 (owns $900, -$200 cash)", (await remainingOf(B)) === 1900, `${await remainingOf(B)}`);
-  report("happy: returned summary matches board (A)", t1.ok && t1.managerA.remaining === 2900, t1.ok ? `${t1.managerA.remaining}` : "-");
-  report("happy: returned summary matches board (B)", t1.ok && t1.managerB.remaining === 1900, t1.ok ? `${t1.managerB.remaining}` : "-");
+  // NO refund: A's auction spend ($800) is sunk. A only gets the $200 cash back
+  // (remaining 2200 + 200 = 2400). B keeps its auction spend ($400) and pays $200
+  // cash for the traded-in player (remaining 2600 - 200 = 2400); B does NOT inherit
+  // the $500 salary. The $500 player moves to B; the money paid for it stays spent.
+  report("happy: A remaining 2400 (auction $800 sunk, +$200 cash back)", (await remainingOf(A)) === 2400, `${await remainingOf(A)}`);
+  report("happy: B remaining 2400 (auction $400 + $200 cash paid)", (await remainingOf(B)) === 2400, `${await remainingOf(B)}`);
+  report("happy: returned summary matches board (A)", t1.ok && t1.managerA.remaining === 2400, t1.ok ? `${t1.managerA.remaining}` : "-");
+  report("happy: returned summary matches board (B)", t1.ok && t1.managerB.remaining === 2400, t1.ok ? `${t1.managerB.remaining}` : "-");
   report("happy: total remaining conserved (4800)", (await remainingOf(A)) + (await remainingOf(B)) === 4800, "");
   report("happy: player now owned by B", (await ownerOf(P_A_MID)) === B, `owner ${await ownerOf(P_A_MID)}`);
   const [{ n: legRows }] = await sql`select count(*)::int as n from trade_players where trade_id = ${t1.ok ? t1.tradeId : -1} and player_id = ${P_A_MID} and from_manager = ${A} and to_manager = ${B}`;
