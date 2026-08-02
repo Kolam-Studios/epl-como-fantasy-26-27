@@ -1,9 +1,10 @@
 "use client";
 
 // The room - squads: a 1600x900 TV canvas, 4x2 grid of manager cells. Each
-// cell is a quick "how's this manager doing" read: spend, the Claude-value
-// verdict on the whole squad, the top-5 spend, and the quota fill. Polls
-// /api/players directly (its own poll + scale, independent of the board).
+// cell is a quick "how's this manager doing" read: remaining budget as the
+// focal number, total spend and the Claude differential pill top-right, the
+// top-5 spend, and the quota fill. Polls /api/players directly (its own poll +
+// scale, independent of the board).
 
 import type { CSSProperties } from "react";
 import Link from "next/link";
@@ -55,21 +56,21 @@ function ManagerCell({ m, byId }: { m: PlayersManager; byId: Map<number, PlayerR
   return (
     <div className="sq" data-testid={`squads-manager-${m.slot}`}>
       <div className="h">
-        <span className="nm">
-          <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
+        <span className="hl">
+          <span className="nm">
+            <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
+          </span>
+          <span className="big">{money(m.remaining)}</span>
         </span>
-        <span className="fin">{money(m.spent)} - left {money(m.remaining)}</span>
-      </div>
-      <div className="val">
-        <span className="lbl">Claude value</span>
-        {m.claudeValue == null ? (
-          // Squad players are all sold, so a missing total means values are not
-          // in yet (batch incomplete) - "pending", not "sealed" (which implies unsold).
-          <span className="v sealed">pending</span>
-        ) : (
-          <span className="v">{money(m.claudeValue)}</span>
-        )}
-        <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
+        <span className="hr">
+          <span className="spend">{money(m.spent)}</span>
+          {m.claudeDelta == null ? (
+            // Values not generated yet - no pill, just a muted dash (never "pending").
+            <span className="nodelta">-</span>
+          ) : (
+            <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
+          )}
+        </span>
       </div>
       {top.map((p) => (
         <Link href={`/player/${p.id}`} className="pr pr-link" key={p.id}>
@@ -95,18 +96,25 @@ function PhoneManagerCard({ m, byId, squadSize }: { m: PlayersManager; byId: Map
   const owned = m.squadPlayerIds.map((id) => byId.get(id)).filter((p): p is PlayerRow => p != null);
   return (
     <div className="ph-card" data-testid={`ph-squad-${m.slot}`}>
-      <div className="ph-row1">
-        <span className="ph-mgr">
-          <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
+      <div className="ph-sqhead">
+        <span className="ph-hl">
+          <span className="ph-eyeline">
+            <span className="ph-mgr">
+              <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
+            </span>
+            <span className="ph-count">{owned.length}/{squadSize}</span>
+          </span>
+          <span className="ph-money-big">{money(m.remaining)}</span>
         </span>
-        <span className="ph-money-big">{money(m.remaining)}</span>
-      </div>
-      <div className="ph-row2">
-        <span>spent {money(m.spent)}</span>
-        <span>{owned.length}/{squadSize}</span>
-        {m.claudeValue != null && (
-          <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
-        )}
+        <span className="ph-hr">
+          <span className="ph-spend">spent {money(m.spent)}</span>
+          {m.claudeDelta == null ? (
+            // Values not generated yet - no pill, just a muted dash (never "pending").
+            <span className="ph-nodelta">-</span>
+          ) : (
+            <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
+          )}
+        </span>
       </div>
       <div className="ph-players">
         {owned.map((p) => (
