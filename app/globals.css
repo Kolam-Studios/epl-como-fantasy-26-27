@@ -213,6 +213,21 @@ body {
 }
 .sealed { color: var(--bronze); font-weight: 700; }
 
+/* Retainability (#claude-values): the share of a player's Claude value that
+   survives the February retention rule at this price, shown next to the value
+   as a small muted "NN% ret." tag. Sits inline so it reads as a footnote to the
+   value, never competing with the verdict pill. */
+.claudecell { display: inline-flex; align-items: baseline; gap: 6px; }
+.retain {
+  color: var(--muted);
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: help;
+  margin-left: 6px;
+}
+
 /* The reveal takeover: the signature moment - make it loud */
 section.reveal {
   background: var(--ink);

@@ -34,6 +34,8 @@ export interface PlayerRow {
   price: number | null;
   /** Sealed Claude value - present ONLY on sold rows (structural, see core). */
   value: number | null;
+  /** Share of value surviving the Feb retention rule (0.52-1.00); sold rows only. */
+  retainability: number | null;
   delta: number | null;
   verdict: Verdict | null;
   /** Passed over with no bid and still unsold (the ledger's NO BID marker). */

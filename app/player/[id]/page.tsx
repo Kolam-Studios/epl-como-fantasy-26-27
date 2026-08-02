@@ -218,7 +218,17 @@ function PhoneDetail({ payload }: { payload: PlayerDetailPayload }) {
             <span className="ph-money-big">{money(sale.price)}</span>
           </div>
           <div className="ph-row2" style={{ borderBottom: "none", paddingBottom: 0 }}>
-            <span>Claude value {sale.value == null ? "pending" : money(sale.value)}</span>
+            <span>
+              Claude value {sale.value == null ? "pending" : money(sale.value)}
+              {sale.retainability != null && (
+                <span
+                  className="retain"
+                  title="share of this player's value that survives the February retention rule at this price"
+                >
+                  {Math.round(sale.retainability * 100)}% ret.
+                </span>
+              )}
+            </span>
             {sale.verdict && (
               <span className={`pill ${verdictPill(sale.verdict)}`}>
                 {sale.verdict}{sale.delta != null ? ` ${money(sale.delta)}` : ""}
@@ -423,7 +433,17 @@ function DesktopDetail({ payload }: { payload: PlayerDetailPayload }) {
               <div className="pd-sale" data-testid="pd-sale">
                 <span className="pd-sale-owner">SOLD &rarr; {abbr(sale.ownerShort)}</span>
                 <span className="pd-sale-price">Paid {money(sale.price)}</span>
-                <span className="pd-sale-val">Claude value {sale.value == null ? "pending" : money(sale.value)}</span>
+                <span className="pd-sale-val">
+                  Claude value {sale.value == null ? "pending" : money(sale.value)}
+                  {sale.retainability != null && (
+                    <span
+                      className="retain"
+                      title="share of this player's value that survives the February retention rule at this price"
+                    >
+                      {Math.round(sale.retainability * 100)}% ret.
+                    </span>
+                  )}
+                </span>
                 {sale.verdict && (
                   <span className={`pill ${verdictPill(sale.verdict)}`} style={{ fontSize: 18, padding: "4px 16px" }}>
                     {sale.verdict}{sale.delta != null ? ` ${money(sale.delta)}` : ""}

@@ -104,10 +104,17 @@ create table if not exists trade_players (
 -- Sealed AI values. NEVER joined into any response for players without a
 -- current sale.
 create table if not exists valuations (
-  player_id    integer primary key references players(id),
-  value        integer,
-  generated_at timestamptz
+  player_id     integer primary key references players(id),
+  value         integer,
+  -- Share of the player's value that survives the February retention rule at
+  -- this price (0.52-1.00), from the retention-adjusted Claude values. Nullable:
+  -- older value sources (the Claude-API job) do not set it, and a missing value
+  -- must never break the reveal. Additive column - see load-claude-values.mjs.
+  retainability numeric,
+  generated_at  timestamptz
 );
+-- Additive migration for DBs created before retainability existed.
+alter table valuations add column if not exists retainability numeric;
 
 create table if not exists briefs (
   player_id integer primary key references players(id),

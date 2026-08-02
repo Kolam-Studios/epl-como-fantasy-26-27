@@ -314,6 +314,14 @@ function RulebookBody() {
             of the league economy, rather than hardcoded.
           </p>
           <p>
+            The values are <strong>retention-adjusted</strong>: an August buy is worth its first-half
+            points plus the option to keep the player for the second half at the same price, and that
+            option is worth less the more you pay. So the elite names are valued below their raw market
+            price and will often read OVERPAY at auction - that is the February retention tax working as
+            intended, not a misprice. Each sold player also shows a &quot;% ret.&quot; figure: the share
+            of the value that survives that rule at the price paid.
+          </p>
+          <p>
             Sealing is enforced on the server, not just hidden with styling: a sealed valuation never
             appears in any data sent to a browser for a player who has not yet sold.
           </p>

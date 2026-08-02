@@ -63,6 +63,8 @@ export interface PlayerSale {
   lotNo: number | null;
   /** Now-unsealed Claude value (revealed at the hammer). */
   value: number | null;
+  /** Share of value surviving the Feb retention rule (0.52-1.00). */
+  retainability: number | null;
   delta: number | null;
   verdict: Verdict | null;
 }

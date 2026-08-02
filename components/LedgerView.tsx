@@ -87,7 +87,17 @@ function Row({ p }: { p: PlayerRow }) {
           // "sealed" is just the room-facing label for that absence.
           <span className="sealed">sealed</span>
         ) : p.value != null ? (
-          money(p.value)
+          <span className="claudecell">
+            {money(p.value)}
+            {p.retainability != null && (
+              <span
+                className="retain"
+                title="share of this player's value that survives the February retention rule at this price"
+              >
+                {Math.round(p.retainability * 100)}% ret.
+              </span>
+            )}
+          </span>
         ) : (
           // Sold but not yet valued (valuation batch incomplete): "pending",
           // matching the board reveal's wording - never a bare "?".

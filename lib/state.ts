@@ -89,6 +89,7 @@ export interface RecentSale {
   price: number;
   lotNo: number | null;
   value: number | null;
+  retainability: number | null;
   delta: number | null;
   verdict: Verdict | null;
   createdAt: string;
@@ -104,6 +105,7 @@ export interface Reveal {
   managerShort: string | null;
   price: number;
   value: number | null;
+  retainability: number | null;
   delta: number | null;
   pctOver: number | null;
   verdict: Verdict | null;

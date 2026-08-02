@@ -9,6 +9,7 @@ tsconfig.tsbuildinfo
 .DS_Store
 .vercel
 /data/*.json
+/data/*.csv
 
 # real roster (public repo): keep names out of git
 league.config.local.json
