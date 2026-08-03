@@ -1,0 +1,12 @@
+season,managers,budget_per_manager,squad_size,record,champion,source
+2016-17,7,,18,"settled squads only (Teams tab, 18 slots each), 126 buys; no bid-by-bid log survives; squad costs do not reconcile to the tab's own TOTAL SPENT row, which is stale against in-season transfers; final ladder recorded on Scoring",Robbie (Varun 2nd),Como 2016/17 sheet (Teams + Scoring)
+2017-18,6,2000,15,"two bid logs (Bidding List 1 auction 49 buys, Bidding List 2 rebid 42 buys) plus settled squads (Teams, 90 buys); season scored in three sessions, final ladder on Sessions",Lakshman (Milo 2nd),Como 2017/18 sheet (Bidding List 1/2 + Teams + Sessions)
+2018-19,9,3000,15,"full auction (135) plus four rebids (529) and a bargain-bin blind round (45); rebid 1 and 2 record winners but not prices; settled squads from Rebid Teams (135), whose Cost column is rebid spend only, blank for players retained from the auction",unknown (no ladder recorded),"Como 2018/19 sheet (Auction, Rebid #1-4, Rebid #1 Bargain Bin, Rebid Teams)"
+2019-20,8,3000,15,"settled squads only (Team lists), 120 buys, spends reconcile to the sheet; no bid-by-bid log survives",unknown (no ladder recorded),Como 2019/20 sheet (Team lists)
+2020-21,8,3000,15,"auction (Data) plus a blind bargain round (Bid1 Bargains) and two rebids (Data2, Data3); no settled squad table; auction+bargain gives 15 each except Robbie, who won 9 and took no bargain-round player",unknown (no ladder recorded),"COMO 20/21 sheet (Data, Data2, Data3, Bid1 Bargains)"
+2021-22,8,3000,15,"settled squads (Teams Bid 2), 120 buys, complete",unknown (no ladder recorded),Como 2021/22 sheet
+2022-23,,,,no auction run (FPL data sheet only),,COMO FPL Data 2022/2023
+2023-24,8,5000,15,live auction + Tier 4 blind bids; rosters incomplete in sheet (6-14 kept per manager); January rebid not run,unknown (no ladder recorded),Como 2023/24 sheet (Teams Bid 1 + Blind Bids 1)
+2024-25,,,,no EPL auction run (BBL season instead),,
+2025-26,7,2000,15,"complete, 105 buys; spends reconcile to sheet",Mayoori (Dom 2nd),COMO 25/26 live auction grid
+2026-27,7,3000,15,"complete, 105 buys, auction 2026-08-02; season not yet played",,epl-como-fantasy-26-27 app export
