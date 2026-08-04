@@ -241,6 +241,47 @@ alter table app_state add column if not exists reveal_until timestamptz;
 alter table sales  add column if not exists stage text not null default 'auction-1';
 alter table trades add column if not exists stage text not null default 'auction-1';
 
+-- ---------------------------------------------------------------------------
+-- Waiver era (docs/DESIGN-WAIVERS.md section 5). The season runs in PERIODS:
+-- the August auction (retro-fitted as period 1, "Bid 1"), then monthly blind-
+-- bid waivers, then the January rebid. Row set comes from league.config.json
+-- ("periods", seeded idempotently by scripts/db-setup.mjs); STATUS is runtime
+-- state and moves only through the lifecycle code
+-- (locked -> open -> resolving -> closed), never through the seed.
+create table if not exists periods (
+  id        serial primary key,
+  season    text not null,          -- league season code, e.g. COMO2526
+  kind      text not null check (kind in ('rebid','waiver')),
+  label     text not null unique,   -- "Bid 1", "Waiver 1", ... (also the stage tag on money rows)
+  seq       integer not null unique,
+  opens_at  timestamptz,            -- informational; null = not yet opened / TBD
+  cutoff_at timestamptz,            -- submission cutoff; null = date TBD (Bid 2)
+  status    text not null default 'locked'
+            check (status in ('locked','open','resolving','closed'))
+);
+
+-- The frozen archive of a closed period: budgets, squads, ledger, trades,
+-- charts and awards as they stood at close. Written exactly once at close
+-- (or by the Bid 1 backfill); archived pages render from this payload and
+-- never recompute. Extends the season_recap precedent to whole periods.
+create table if not exists period_snapshots (
+  period_id integer primary key references periods(id),
+  payload   jsonb not null,
+  frozen_at timestamptz not null default now()
+);
+
+-- Which period is live right now (null = pre-waiver-era auction behavior).
+alter table app_state add column if not exists current_period_id integer references periods(id);
+
+-- Every money row knows its period. Existing auction rows keep their original
+-- stage string ('auction-1'); the backfill stamps their period_id to period 1.
+-- New waiver-era writes set stage = the period LABEL and period_id together.
+alter table sales  add column if not exists period_id integer references periods(id);
+alter table trades add column if not exists period_id integer references periods(id);
+
+create index if not exists sales_period_idx on sales(period_id);
+create index if not exists trades_period_idx on trades(period_id);
+
 create index if not exists sales_manager_idx on sales(manager_id);
 create index if not exists lot_events_player_idx on lot_events(player_id);
 create index if not exists audit_log_created_idx on audit_log(created_at);

@@ -1656,3 +1656,17 @@ a.ph-prow.ph-prow-link { color: inherit; text-decoration: none; }
   .tr-sides { grid-template-columns: 1fr; gap: 10px; }
   .tr-title { font-size: 25px; }
 }
+
+/* =====================================================================
+   STAGE-2 SECTION: phase navigation (waiver era). All stage-2 nav CSS
+   goes INSIDE this section, above the closing marker.
+   ===================================================================== */
+
+/* end STAGE-2 SECTION */
+
+/* =====================================================================
+   STAGE-3 SECTION: squads fix + ledger filter system. All stage-3 CSS
+   goes INSIDE this section, above the closing marker.
+   ===================================================================== */
+
+/* end STAGE-3 SECTION */

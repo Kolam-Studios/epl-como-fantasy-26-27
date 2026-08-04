@@ -12,9 +12,12 @@
 // Exit code is non-zero if ANY suite fails (or setup/ingest fails), so this is
 // safe to wire into a pre-cutover check.
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
+import { buildConfig } from "../lib/config-core.mjs";
+import { seedPeriods } from "../lib/period-core.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -69,6 +72,12 @@ try {
   // NOT truncated (re-ingesting between suites would be slow). None of these is
   // referenced by a table outside the list, so no CASCADE is needed.
   const MUTABLE = "sales, lot_events, trades, trade_players, valuations, valuation_meta, player_history, player_history_meta, briefs, season_recap, audit_log";
+  const cfg = buildConfig(
+    JSON.parse(readFileSync(join(root, "league.config.json"), "utf8")),
+    existsSync(join(root, "league.config.local.json"))
+      ? JSON.parse(readFileSync(join(root, "league.config.local.json"), "utf8"))
+      : undefined,
+  );
   async function resetBaseline() {
     await scratchSql.unsafe(`truncate table ${MUTABLE} restart identity`);
     await scratchSql`delete from managers where slot not in (select slot from _battery_base_slots)`;
@@ -77,8 +86,16 @@ try {
       update app_state set
         phase = 1, paused = false, current_player_id = null, tv_view = 'block',
         reveal_until = null, nomination_turn = null, lot_queue = null,
-        pool_frozen = false, version = version + 1
+        pool_frozen = false, current_period_id = null, version = version + 1
       where id = 1`;
+    // Periods reset to the exact post-setup baseline: all configured rows,
+    // all locked, ids restarted so suites see stable period ids. app_state's
+    // pointer was nulled above and sales/trades/period_snapshots emptied, so
+    // plain DELETE is FK-safe (TRUNCATE CASCADE would eat app_state).
+    await scratchSql`delete from period_snapshots`;
+    await scratchSql`delete from periods`;
+    await scratchSql.unsafe(`alter sequence periods_id_seq restart with 1`);
+    await seedPeriods(scratchSql, cfg);
   }
 
   // Every suite. Pure-logic suites (derive/club) do not need the DB but are
@@ -99,6 +116,7 @@ try {
     ["corrections", ["scripts/test-corrections.mjs"]],
     ["trade", ["scripts/test-trade.mjs"]],
     ["trades", ["scripts/test-trades.mjs"]],
+    ["periods", ["scripts/test-periods.mjs"]],
     ["lot", ["scripts/test-lot.mjs"]],
     ["full night", ["scripts/test-full-night.mjs"]],
   ];

@@ -23,7 +23,8 @@
     "test:corrections": "node --env-file=.env scripts/test-corrections.mjs",
     "test:trade": "node --env-file=.env scripts/test-trade.mjs",
     "test:lot": "node --env-file=.env scripts/test-lot.mjs",
-    "test:ui": "node --env-file=.env scripts/test-ui.mjs"
+    "test:ui": "node --env-file=.env scripts/test-ui.mjs",
+    "test:periods": "node --env-file=.env scripts/test-periods.mjs"
   },
   "dependencies": {
     "next": "^15.1.0",

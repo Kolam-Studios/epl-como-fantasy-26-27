@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
 import { buildConfig } from "../lib/config-core.mjs";
+import { seedPeriods } from "../lib/period-core.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
@@ -44,6 +45,8 @@ try {
   console.log(`seeded ${config.managers.length} managers`);
   await sql`insert into app_state (id) values (1) on conflict (id) do nothing`;
   console.log("app_state singleton ensured");
+  const periodCount = await seedPeriods(sql, config);
+  console.log(`seeded ${periodCount} periods (statuses untouched)`);
 } catch (err) {
   console.error("db:setup failed:", err.message);
   process.exit(1);
