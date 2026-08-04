@@ -7,6 +7,7 @@ import type { Position } from "./config";
 import { getConfig } from "./config";
 import { sql } from "./db";
 import type { PoolCounts, Tertiles, Verdict } from "./derive";
+import type { Period } from "./periods";
 import { buildStatePayload as buildStatePayloadCore } from "./state-core.mjs";
 
 export interface CurrentLot {
@@ -140,6 +141,12 @@ export interface RecentTrade {
 export interface StatePayload {
   version: number;
   phase: number;
+  /** Season phases (docs/DESIGN-WAIVERS.md 2.1), calendar order. Empty
+   * pre-backfill. */
+  periods: Period[];
+  /** The live phase, or null pre-backfill / before app_state.current_period_id
+   * is set. */
+  currentPeriod: Period | null;
   paused: boolean;
   tvView: string;
   currentLot: CurrentLot | null;

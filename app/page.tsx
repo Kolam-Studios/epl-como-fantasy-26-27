@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import type { StatePayload } from "@/lib/state";
 import clubColors from "@/lib/club-colors.json";
 import { washForClub } from "@/lib/club-core.mjs";
@@ -233,13 +234,28 @@ export default function Board() {
   const { payload, connected } = usePolledState();
   const { ref, scale } = useBoardScale();
   const isPhone = useIsPhone();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Root resolution (docs/DESIGN-WAIVERS.md 2.1): the site root always
+  // resolves to the current phase. A waiver current period sends the root
+  // straight to its /phase/[seq]; a rebid (or no current period, i.e. the
+  // pre-backfill world) leaves the board rendering exactly as today.
+  const currentPeriodKind = payload?.currentPeriod?.kind ?? null;
+  const currentPeriodSeq = payload?.currentPeriod?.seq ?? null;
+  useEffect(() => {
+    if (pathname === "/" && currentPeriodKind === "waiver" && currentPeriodSeq != null) {
+      router.replace(`/phase/${currentPeriodSeq}`);
+    }
+  }, [pathname, currentPeriodKind, currentPeriodSeq, router]);
+
   if (isPhone) return <PhoneBoard payload={payload} connected={connected} />;
 
   // Alternate room-facing screens hand off entirely once tv.set flips tvView -
   // squads/ledger run their own poll + scale, so they need nothing from here.
   // This must come after both hooks above (rules-of-hooks: no early return
   // before every hook on this component has run).
-  if (payload?.tvView === "squads") return <SquadsView />;
+  if (payload?.tvView === "squads") return <SquadsView tv />;
   if (payload?.tvView === "ledger") return <LedgerView />;
   if (payload?.tvView === "paused") {
     const readyP = scale > 0;

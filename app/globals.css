@@ -1662,6 +1662,148 @@ a.ph-prow.ph-prow-link { color: inherit; text-decoration: none; }
    goes INSIDE this section, above the closing marker.
    ===================================================================== */
 
+/* Two-level phase nav (docs/DESIGN-WAIVERS.md 2.1, mockup A): a phase rail on
+   top, a per-phase sub-rail below. Sticky like .room-nav (reserves its own
+   height in normal flow; never overlaps the scaled TV canvases). Same type
+   and bronze active-underline language as .room-navtab/.sub-tab, so it reads
+   as one family with the existing nav. */
+.phase-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--card);
+  border-bottom: 1px solid var(--hair);
+  box-shadow: var(--shadow-md);
+}
+/* Hidden under 640px on every route except a bare /phase/[seq] (and its
+   Budget/Charts sub-tabs): the three sub-tabs that embed an unmodified
+   legacy view (SquadsView/LedgerView/TradesView) already mount their own
+   fixed .ph-nav on phone, so this rail steps aside there instead of
+   doubling the nav (see components/PhaseNav.tsx). */
+@media (max-width: 640px) {
+  .phase-nav.phase-nav--legacy { display: none; }
+}
+
+.phase-rail {
+  display: flex;
+  gap: 2px;
+  padding: 0 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.phase-rail::-webkit-scrollbar { display: none; }
+
+.phase-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  padding: 11px 16px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.phase-tab:hover { color: var(--ink); }
+.phase-tab.active { color: var(--ink); border-bottom-color: var(--bronze); }
+.phase-tab.locked { opacity: 0.45; }
+.phase-tab .lock { font-size: 11px; }
+.phase-tab .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vg);
+  box-shadow: 0 0 5px rgba(27, 122, 69, 0.55);
+  flex: 0 0 auto;
+}
+.phase-tab-date { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.phase-tab.util { margin-left: auto; }
+
+.sub-rail {
+  display: flex;
+  gap: 2px;
+  padding: 0 6px;
+  border-top: 1px solid var(--hair);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sub-rail::-webkit-scrollbar { display: none; }
+.sub-tab {
+  padding: 9px 15px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sub-tab:hover { color: var(--ink); }
+.sub-tab.active { color: var(--ink); border-bottom-color: var(--bronze); }
+
+/* Phase state chips: live/locked/closed, built from existing tints (no new
+   palette entries). Used on phase landing pages next to the phase title. */
+.state-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: var(--pill);
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.state-chip.live { background: var(--up); color: var(--vg); }
+.state-chip.locked { background: var(--chip); color: var(--muted); }
+.state-chip.closed { background: var(--flat); color: var(--vf); }
+.state-chip .live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vg);
+  display: inline-block;
+}
+
+/* Countdown block on the live phase's landing tab. */
+.count-row { display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap; }
+.count-row .cnum {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  font-size: 40px;
+  line-height: 1;
+}
+.count-row .clab { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Disabled waiver-form entry button on the live phase's landing tab (the
+   waiver form itself is a later stage's build). */
+.phase-formcta {
+  margin-top: 14px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--btn-ink-text);
+  background: var(--btn-ink);
+  border: none;
+  border-radius: var(--pill);
+  box-shadow: var(--shadow-md);
+  padding: 10px 22px;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .phase-tab { padding: 10px 12px; font-size: 11.5px; }
+  .phase-tab.util { margin-left: 0; }
+  .sub-tab { flex: 1; text-align: center; padding: 9px 8px; }
+}
+
 /* end STAGE-2 SECTION */
 
 /* =====================================================================
@@ -1669,4 +1811,178 @@ a.ph-prow.ph-prow-link { color: inherit; text-decoration: none; }
    goes INSIDE this section, above the closing marker.
    ===================================================================== */
 
+/* Generic muted-text helper, ported from the mockup kit's convention
+   (previously only scoped under .led .mut). Used by empty-slot rows and
+   "no delta yet" reads across the new squad-card variants. */
+.mut { color: var(--muted); }
+
+/* ---- F. Squads fixed: one squad-card component, three containers ------- */
+
+/* Desktop grid container: the normal, unscaled page (RoomNav visible),
+   distinct from the TV's fixed 1600x900 canvas (?tv=1). Two columns,
+   collapsing to one on phone width, matching mockup F's .squad-grid. */
+.squads-grid-screen { max-width: 1200px; }
+.squad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .squad-grid { grid-template-columns: 1fr; } }
+
+.manager-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 16px 18px; margin: 0; }
+.manager-card .mc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.manager-card .mc-head h2 { margin: 0; font-size: 13px; font-family: var(--font-display), system-ui, sans-serif; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.manager-card .mc-head h2 a { color: inherit; text-decoration: none; }
+.manager-card .mc-head h2 a:hover { text-decoration: underline; }
+.manager-card .mc-budget { font-size: 26px; }
+.manager-card .mc-budget .chip { font-size: 10.5px; margin-left: 6px; vertical-align: middle; }
+.manager-card .mc-foot { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.manager-card .mc-foot .s-spent { font-size: 11.5px; color: var(--muted); }
+.squad-list { display: flex; flex-direction: column; }
+.squad-row { display: flex; align-items: center; gap: 9px; padding: 5px 0; border-bottom: 1px solid var(--hair); font-size: 13px; }
+.squad-row:last-child { border-bottom: none; }
+.squad-row.group-start { margin-top: 8px; }
+.squad-row .sname { flex: 1; font-weight: 600; }
+.squad-row .sclub { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; width: 32px; text-align: right; }
+.squad-row .sprice { font-family: var(--font-display), sans-serif; font-weight: 700; width: 52px; text-align: right; }
+a.squad-row.squad-row-link { color: inherit; text-decoration: none; }
+a.squad-row.squad-row-link:hover { background: var(--chip); }
+.empty-state { color: var(--muted); text-align: center; padding: 46px 10px; font-size: 14px; }
+
+/* Empty-slot rows (squad short of its config quota) in the TV and phone
+   variants: reuse the existing .pr / .ph-prow row shells, just muted. */
+.sq .pr.pr-empty { opacity: 0.55; }
+.ph-prow.ph-prow-empty { opacity: 0.55; }
+
+/* ---- E. Ledger filters: one filter model, desktop bar + phone sheet ---- */
+
+.ledger-filters { margin: 0 0 14px; }
+.filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; }
+.filter-group:last-child { margin-bottom: 0; }
+.filter-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700; color: var(--muted); min-width: 60px; margin-right: 2px; }
+.fchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--chip); color: var(--ink); border: none; border-radius: var(--pill);
+  font-family: var(--font-body), system-ui, sans-serif; font-weight: 600; font-size: 13px;
+  padding: 6px 14px; margin: 0; box-shadow: none; cursor: pointer; white-space: nowrap;
+}
+.fchip.active { background: var(--btn-ink); color: var(--btn-ink-text); }
+.fchip .caret { font-size: 9px; opacity: 0.7; }
+
+.club-select { position: relative; display: inline-block; }
+.club-panel {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 60; width: 250px;
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 12px;
+}
+.club-panel input[type="text"] { width: 100%; margin-bottom: 8px; box-sizing: border-box; font-family: var(--font-body), system-ui, sans-serif; font-size: 15px; color: var(--ink); background: var(--card); border: 1px solid var(--hair); border-radius: 8px; padding: 8px 11px; }
+.club-list { max-height: 220px; overflow-y: auto; margin-bottom: 8px; }
+.club-list label { display: flex; align-items: center; gap: 9px; padding: 5px 3px; font-size: 13.5px; cursor: pointer; }
+.panel-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid var(--hair); }
+.link-btn { background: none; border: none; box-shadow: none; padding: 0; margin: 0; color: var(--bronze); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+.active-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+.active-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); color: var(--ink); border-radius: var(--pill); padding: 4px 6px 4px 13px; font-size: 12.5px; font-weight: 600; }
+.active-pill button { all: unset; cursor: pointer; font-size: 13px; line-height: 1; color: var(--muted); padding: 2px 6px; }
+.active-pill button:hover { color: var(--ink); }
+.result-count { color: var(--muted); font-size: 13px; }
+
+/* Sortable TH (Paid / Claude value): click to sort, arrow dims when inactive. */
+.led th.sortable { cursor: pointer; user-select: none; }
+.led th.sortable .arrow { display: inline-block; font-size: 9px; margin-left: 4px; opacity: 0.35; }
+.led th.sortable.sort-active .arrow { opacity: 1; color: var(--bronze); }
+
+/* Phone filter sheet: same .ph-ctrlgroup/.ph-chipbtn shell as the rest of the
+   phone controls; the club popover becomes a fixed bottom sheet. */
+@media (max-width: 640px) {
+  .ledger-filters-phone .club-panel {
+    position: fixed; left: 10px; right: 10px; bottom: 10px; top: auto; width: auto;
+    border-radius: 16px; max-height: 70vh; overflow-y: auto;
+  }
+}
+
 /* end STAGE-3 SECTION */
+
+/* =====================================================================
+   STAGE-4 SECTION: waiver blind-bid form (mockup B). All stage-4 CSS
+   goes INSIDE this section, above the closing marker.
+   ===================================================================== */
+
+.wv-screen .note { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 12px 16px; margin: 0 0 16px; font-size: 13.5px; color: var(--muted); }
+.wv-screen .note b.tag { display: block; color: var(--bronze); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; margin-bottom: 4px; }
+.wv-screen .wv-note-muted { text-align: center; color: var(--muted); }
+.wv-screen .wv-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 5px; }
+
+/* Step progress rail across the top of the form card */
+.wv-screen .steps { display: flex; align-items: center; margin: 0 0 20px; }
+.wv-screen .step-item { display: flex; align-items: center; gap: 9px; cursor: default; }
+.wv-screen .step-item.done, .wv-screen .step-item.current { cursor: pointer; }
+.wv-screen .step-circle {
+  width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 12.5px;
+  background: var(--chip); color: var(--muted);
+}
+.wv-screen .step-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.wv-screen .step-item.done .step-circle { background: var(--bronze); color: #fff; }
+.wv-screen .step-item.done .step-label { color: var(--ink); }
+.wv-screen .step-item.current .step-circle { background: var(--btn-ink); color: var(--btn-ink-text); }
+.wv-screen .step-item.current .step-label { color: var(--ink); }
+.wv-screen .step-line { flex: 1; height: 1px; background: var(--hair); margin: 0 12px; min-width: 12px; }
+
+/* Resubmission banner: bronze-tinted note variant */
+.wv-screen .banner-resub { background: rgba(143, 107, 36, 0.09); }
+
+/* Squad rows, grouped by position, step 2 */
+.wv-screen .squad-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; }
+.wv-screen .squad-group-title:first-child { margin-top: 0; }
+.wv-screen .squad-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--hair); flex-wrap: wrap; }
+.wv-screen .squad-row:last-child { border-bottom: none; }
+.wv-screen .sq-name { flex: 1 1 140px; font-weight: 600; font-size: 14.5px; min-width: 110px; }
+.wv-screen .sq-salary { font-size: 16px; min-width: 52px; text-align: right; }
+.wv-screen .kd-toggle { border: none; border-radius: var(--pill); padding: 4px 13px; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; cursor: pointer; box-shadow: none; margin: 0; }
+.wv-screen .kd-toggle.keep { background: var(--chip); color: var(--muted); }
+.wv-screen .kd-toggle.drop { background: var(--down); color: var(--vb); }
+.wv-screen .drop-ctrls { display: inline-flex; align-items: center; gap: 4px; min-width: 68px; }
+.wv-screen .drop-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--bronze); color: #fff; font-size: 10.5px; font-weight: 700; font-family: var(--font-display), sans-serif; flex: 0 0 auto; }
+.wv-screen .arrow-btn { width: 22px; height: 22px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; margin: 0; box-shadow: var(--shadow-sm); }
+.wv-screen .drop-summary { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); font-size: 13.5px; color: var(--ink); font-weight: 500; }
+
+/* Bid rows, step 3 */
+.wv-screen .bid-row-wrap { margin: 0 0 14px; }
+.wv-screen .bid-row { display: grid; grid-template-columns: 1fr 110px 34px; gap: 10px; align-items: start; }
+.wv-screen .bid-row input { width: 100%; }
+.wv-screen .remove-bid { width: 34px; height: 34px; padding: 0; border-radius: 50%; font-size: 16px; line-height: 1; color: var(--muted); }
+.wv-screen .typeahead-list { position: absolute; top: calc(100% + 3px); left: 0; right: 0; background: var(--card); border-radius: 8px; box-shadow: var(--shadow-md); z-index: 20; max-height: 220px; overflow-y: auto; }
+.wv-screen .typeahead-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; font-size: 13.5px; cursor: pointer; }
+.wv-screen .typeahead-item:hover { background: var(--chip); }
+.wv-screen .typeahead-item .posmark { width: 15px; height: 15px; font-size: 9px; margin-right: 5px; }
+.wv-screen .bid-role-badge { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); display: flex; align-items: center; gap: 5px; pointer-events: none; background: var(--card); padding-left: 6px; border-radius: 4px; }
+.wv-screen .bid-role-badge .posmark { width: 15px; height: 15px; font-size: 9px; }
+.wv-screen .bid-role-badge .chip { font-size: 10.5px; padding: 1px 7px; }
+.wv-screen .win-rights-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.wv-screen .win-chip { font-weight: 700; letter-spacing: 0.02em; }
+.wv-screen .win-chip.active { color: var(--ink); background: var(--chip); }
+.wv-screen .win-chip.zero { color: var(--muted); background: var(--chip); opacity: 0.65; }
+.wv-screen .bid-msg { font-size: 12.5px; margin-top: 4px; }
+.wv-screen .inline-error { color: var(--vb); font-weight: 600; }
+.wv-screen .inline-warn { color: var(--vf); font-weight: 600; }
+.wv-screen .bid-strip { display: flex; gap: 26px; flex-wrap: wrap; align-items: baseline; background: var(--chip); border-radius: 8px; padding: 13px 16px; margin-top: 6px; }
+.wv-screen .bid-strip .slab { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 2px; }
+.wv-screen .bid-strip .snum { font-size: 25px; }
+.wv-screen .wv-warnings { margin: 0 auto 10px; max-width: 420px; text-align: left; }
+
+/* Submitted state */
+.wv-screen .tick-circle { width: 60px; height: 60px; border-radius: 50%; background: var(--up); color: var(--vg); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 6px auto 16px; }
+.wv-screen .submitted-box { text-align: center; padding: 20px 10px 8px; }
+
+@media (max-width: 640px) {
+  .wv-screen .step-label { display: none; }
+  .wv-screen .step-line { margin: 0 6px; }
+  .wv-screen .squad-row { gap: 8px; }
+  .wv-screen .sq-name { flex-basis: 100%; order: 1; }
+  .wv-screen .squad-row .posmark { order: 0; }
+  .wv-screen .squad-row .chip { order: 2; }
+  .wv-screen .sq-salary { order: 3; }
+  .wv-screen .kd-toggle { order: 4; }
+  .wv-screen .drop-ctrls { order: 5; }
+  .wv-screen .bid-row { grid-template-columns: 1fr; }
+  .wv-screen .remove-bid { justify-self: end; }
+}
+
+/* end STAGE-4 SECTION */
