@@ -19,3 +19,6 @@ public/assets/
 # temporary local helper / seeder scripts (scratch DB, demo seeding, screenshots)
 # - never commit; keep them out of the staged diff entirely
 /_*.mjs
+
+# Claude Code workspace config (local)
+.claude/

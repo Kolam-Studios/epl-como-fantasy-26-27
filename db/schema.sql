@@ -282,6 +282,110 @@ alter table trades add column if not exists period_id integer references periods
 create index if not exists sales_period_idx on sales(period_id);
 create index if not exists trades_period_idx on trades(period_id);
 
+-- Drops change what "exclusive ownership" means (docs/DESIGN-WAIVERS.md 5).
+-- A dropped player's sales row is RETAINED (spend is sunk, no refunds) and
+-- marked released; the player is then a free agent and may be won again in a
+-- later period, which inserts a SECOND sales row for the same player. The
+-- backstop therefore becomes: at most one ACTIVE (not released) sale per
+-- player, enforced by a partial unique index that replaces the original
+-- UNIQUE(player_id) constraint. Order matters: add the column, build the
+-- stronger index, only then drop the old constraint - never a window with no
+-- backstop. Data is never touched.
+alter table sales add column if not exists released boolean not null default false;
+create unique index if not exists sales_active_player_uq on sales(player_id) where released = false;
+alter table sales drop constraint if exists sales_player_id_key;
+
+-- Executed drops only (nominations live in waiver_drops): the record that a
+-- player left a squad at a period's resolution. Ownership resolution becomes
+-- sales JOIN trade movements MINUS drops; the released flag on sales is the
+-- indexed denormalisation of this table, written in the same transaction.
+create table if not exists drops (
+  id         serial primary key,
+  period_id  integer not null references periods(id),
+  manager_id integer not null references managers(id),
+  player_id  integer not null references players(id),
+  created_at timestamptz not null default now()
+);
+create index if not exists drops_period_idx on drops(period_id);
+
+-- One row per resolved waiver round: the published seed makes the walk
+-- replayable; UNIQUE(period_id) makes double resolution structurally
+-- impossible.
+create table if not exists waiver_results (
+  id          serial primary key,
+  period_id   integer not null unique references periods(id),
+  seed        text not null,
+  resolved_at timestamptz not null default now()
+);
+
+-- The full processing log, one row per bid in walk order: powers the period
+-- summary, the token history page, the reveal replay, and disputes.
+create table if not exists waiver_outcomes (
+  id                serial primary key,
+  result_id         integer not null references waiver_results(id),
+  sequence          integer not null,
+  manager_id        integer not null references managers(id),
+  player_id         integer not null references players(id),
+  amount            integer not null,
+  outcome           text not null check (outcome in
+                      ('won','player_taken','skipped_funds','skipped_position',
+                       'skipped_capacity','lost_tie')),
+  price             integer,          -- paid price on 'won', else null
+  dropped_player_id integer references players(id),  -- the released drop on 'won'
+  unique (result_id, sequence)
+);
+
+-- Sat-out managers (owner ruling: out for the season, league plays with 7).
+-- A sat-out manager is skipped by the waiver form dropdown, the engine, and
+-- the phase-2 nomination rotation; their frozen wallet row stays in every
+-- archive as the record.
+alter table managers add column if not exists sat_out boolean not null default false;
+
+-- Manager tokens: the waiver form's credential (docs/DESIGN-WAIVERS.md 3B/3C).
+-- One memorable word per manager, compared case-insensitively, HASHED at rest
+-- (sha256 of the folded token), never present in any payload or log. Reissue =
+-- rotate the hash. This is a separate, manager-scoped write gate; it never
+-- grants commissioner rights.
+create table if not exists manager_tokens (
+  manager_id integer primary key references managers(id),
+  token_hash text not null,
+  created_at timestamptz not null default now(),
+  rotated_at timestamptz
+);
+
+-- Waiver submissions: every form ever submitted is kept (the audit trail and
+-- the token history page). The EFFECTIVE form for a (period, manager) is the
+-- latest submitted_at before the cutoff; everything earlier is superseded.
+create table if not exists waiver_submissions (
+  id           serial primary key,
+  period_id    integer not null references periods(id),
+  manager_id   integer not null references managers(id),
+  submitted_at timestamptz not null default now()
+);
+create index if not exists waiver_submissions_pm_idx
+  on waiver_submissions(period_id, manager_id, submitted_at);
+
+-- Nominated drops with the manager's stated priority order. Position derives
+-- from players; drops execute only against wins at resolution.
+create table if not exists waiver_drops (
+  id            serial primary key,
+  submission_id integer not null references waiver_submissions(id),
+  player_id     integer not null references players(id),
+  priority      integer not null check (priority >= 1),
+  unique (submission_id, player_id)
+);
+
+-- Blind bids. bid_order preserves the order bids appear on the form: the
+-- engine's tie-break for equal amounts WITHIN one manager (spec 4.2 rule 2c).
+create table if not exists waiver_bids (
+  id            serial primary key,
+  submission_id integer not null references waiver_submissions(id),
+  player_id     integer not null references players(id),
+  amount        integer not null check (amount > 0),
+  bid_order     integer not null,
+  unique (submission_id, player_id)
+);
+
 create index if not exists sales_manager_idx on sales(manager_id);
 create index if not exists lot_events_player_idx on lot_events(player_id);
 create index if not exists audit_log_created_idx on audit_log(created_at);

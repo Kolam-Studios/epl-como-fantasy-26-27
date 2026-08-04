@@ -71,7 +71,7 @@ try {
   // Data tables suites mutate; players/managers are the fixed baseline and are
   // NOT truncated (re-ingesting between suites would be slow). None of these is
   // referenced by a table outside the list, so no CASCADE is needed.
-  const MUTABLE = "sales, lot_events, trades, trade_players, valuations, valuation_meta, player_history, player_history_meta, briefs, season_recap, audit_log";
+  const MUTABLE = "sales, lot_events, trades, trade_players, valuations, valuation_meta, player_history, player_history_meta, briefs, season_recap, audit_log, manager_tokens, waiver_bids, waiver_drops, waiver_submissions";
   const cfg = buildConfig(
     JSON.parse(readFileSync(join(root, "league.config.json"), "utf8")),
     existsSync(join(root, "league.config.local.json"))
@@ -104,6 +104,7 @@ try {
     ["derive (pure)", ["scripts/test-derive.mjs"]],
     ["club (pure)", ["scripts/test-club.mjs"]],
     ["history (pure)", ["scripts/test-history.mjs"]],
+    ["text (pure)", ["scripts/test-text.mjs"]],
     ["schema", ["scripts/test-schema.mjs"]],
     ["config", ["scripts/test-config.mjs"]],
     ["ingest", ["scripts/test-ingest.mjs"]],
@@ -117,6 +118,7 @@ try {
     ["trade", ["scripts/test-trade.mjs"]],
     ["trades", ["scripts/test-trades.mjs"]],
     ["periods", ["scripts/test-periods.mjs"]],
+    ["waiver form", ["scripts/test-waiver-form.mjs"]],
     ["lot", ["scripts/test-lot.mjs"]],
     ["full night", ["scripts/test-full-night.mjs"]],
   ];

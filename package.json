@@ -24,7 +24,8 @@
     "test:trade": "node --env-file=.env scripts/test-trade.mjs",
     "test:lot": "node --env-file=.env scripts/test-lot.mjs",
     "test:ui": "node --env-file=.env scripts/test-ui.mjs",
-    "test:periods": "node --env-file=.env scripts/test-periods.mjs"
+    "test:periods": "node --env-file=.env scripts/test-periods.mjs",
+    "test:waiver-form": "node --env-file=.env scripts/test-waiver-form.mjs"
   },
   "dependencies": {
     "next": "^15.1.0",

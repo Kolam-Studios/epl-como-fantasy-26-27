@@ -130,10 +130,13 @@ try {
     on conflict (slot) do update set short = excluded.short
     returning id`;
   fakeManagerId = mgr.id;
+  // The exclusive-ownership backstop is now the PARTIAL unique index on
+  // active sales (waiver era: released rows may repeat a player), so the
+  // conflict target must name its predicate.
   await sql`
     insert into sales (player_id, manager_id, price, lot_no, phase)
     values (${FAKE_PLAYER_ID}, ${fakeManagerId}, 10, 1, 1)
-    on conflict (player_id) do nothing`;
+    on conflict (player_id) where released = false do nothing`;
 
   // 1. A sale exists, pool not frozen: full ingest must refuse with exit 1.
   const withSale = runIngest([]);
