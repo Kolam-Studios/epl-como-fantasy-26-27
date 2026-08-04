@@ -1986,3 +1986,88 @@ a.squad-row.squad-row-link:hover { background: var(--chip); }
 }
 
 /* end STAGE-4 SECTION */
+
+/* =====================================================================
+   STAGE-6 SECTION: token history, archived-period summary, period trades.
+   All stage-6 CSS goes INSIDE this section, above the closing marker.
+   ===================================================================== */
+
+/* ---- D. Archived-period ledger: unsold rows read NO BID (mockup D) ---- */
+.no-bid { color: var(--vb); font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---- D. Charts + analysis pane: CSS bar charts, stat tiles, awards ---- */
+.chart-block { margin: 0 0 22px; }
+.chart-block:last-child { margin-bottom: 0; }
+
+.bar-row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-row .bar-label { width: 92px; font-size: 13px; font-weight: 600; flex: 0 0 auto; display: flex; align-items: center; }
+.bar-track { flex: 1; background: var(--chip); border-radius: 6px; height: 18px; overflow: hidden; }
+.bar-fill { background: var(--ink); height: 100%; border-radius: 6px 0 0 6px; }
+.bar-row.sat-out .bar-fill { background: var(--gap, var(--hair)); }
+.bar-row .bar-val { width: 78px; text-align: right; font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 15px; flex: 0 0 auto; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr; } }
+.stat-tile { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 18px 14px; text-align: center; }
+.stat-tile .stat-num { font-size: 34px; }
+.stat-tile .stat-lab { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+.stat-tile .stat-sub { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+.award-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 640px) { .award-grid { grid-template-columns: 1fr; } }
+.award-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 14px 16px; }
+.award-card .aw-eyebrow { color: var(--bronze); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 6px; }
+.award-card .aw-title { font-family: var(--font-display), sans-serif; font-weight: 700; font-size: 17px; margin-bottom: 4px; }
+.award-card .aw-sub { color: var(--muted); font-size: 12.5px; }
+
+/* ---- C. Token history: lookup card, submission rows, version fold ---- */
+.tk-screen { max-width: 760px; margin: 0 auto; }
+.tk-lookup-wrap { display: flex; justify-content: center; padding: 40px 8px; }
+.tk-lookup-card { max-width: 420px; width: 100%; text-align: center; }
+.tk-lookup-card form { display: flex; gap: 8px; margin: 0 0 16px; }
+.tk-lookup-card input[type="password"] { flex: 1; text-align: center; letter-spacing: 0.08em; }
+.tk-lookup-msg { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+
+.tk-history-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 0 0 18px; }
+
+.tk-period-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 4px; }
+.tk-period-sub { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+
+.tk-sub-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin: 16px 0 8px; }
+.tk-sub-label:first-of-type { margin-top: 4px; }
+.tk-row-list { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--hair); }
+.tk-drop-row, .tk-bid-row { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--hair); font-size: 14px; }
+.tk-drop-row .tk-rank { color: var(--muted); font-size: 12px; width: 14px; flex: 0 0 auto; }
+.tk-drop-row .tk-pname, .tk-bid-row .tk-pname { font-weight: 600; flex: 1 1 auto; }
+.tk-drop-row .tk-pclub { color: var(--muted); font-size: 12.5px; flex: 0 0 auto; }
+.tk-drop-row .tk-pamt, .tk-bid-row .tk-pamt { font-family: var(--font-display), sans-serif; font-weight: 300; letter-spacing: -0.02em; font-size: 17px; flex: 0 0 auto; min-width: 48px; text-align: right; }
+
+.tk-submit-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 16px 0 4px; padding-top: 12px; border-top: 1px solid var(--hair); }
+.tk-submit-meta .tk-ts { color: var(--muted); font-size: 12.5px; }
+
+.tk-fold { margin-top: 14px; }
+.tk-fold-toggle { width: 100%; text-align: left; display: flex; align-items: center; justify-content: space-between; background: var(--chip); box-shadow: none; padding: 9px 13px; border-radius: 8px; }
+.tk-fold-toggle .tk-chev { transition: transform 0.15s ease; display: inline-block; }
+.tk-fold-toggle.open .tk-chev { transform: rotate(90deg); }
+.tk-fold-body { padding: 6px 4px 2px; }
+.tk-version-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 8px; border-bottom: 1px solid var(--hair); font-size: 13.5px; }
+.tk-version-row:last-child { border-bottom: none; }
+.tk-version-row .tk-ts { color: var(--muted); }
+
+.tk-period-fold { margin: 0 0 16px; }
+.tk-period-fold-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow-md);
+  padding: 14px 18px; text-align: left; margin: 0;
+}
+.tk-period-fold-toggle .tk-chev { transition: transform 0.15s ease; display: inline-block; }
+.tk-period-fold-toggle.open .tk-chev { transform: rotate(90deg); }
+
+/* ---- console: waiver resolution panel + trade-pause banner ---- */
+.con-waiver-pause { background: rgba(179, 64, 46, 0.12); color: var(--vb); border-radius: 8px; padding: 9px 13px; font-size: 13px; font-weight: 600; margin: 0 0 12px; }
+.con-waiver-panel { margin-top: 22px; }
+.con-waiver-error { color: var(--vb); font-size: 13px; margin: 8px 0 0; }
+.con-waiver-summary { font-size: 13px; color: var(--muted); margin: 10px 0; }
+
+/* end STAGE-6 SECTION */

@@ -31,6 +31,45 @@ import { usePolledPlayers } from "@/components/tv-common";
 
 const TV_VIEWS = ["block", "reveal", "squads", "ledger", "paused"] as const;
 
+// ---- Stage 6: waiver resolution panel + trade-pause banner ----------------
+// (docs/DESIGN-WAIVERS.md 2.3, 4.2, screen H). The engine's own outcome shape
+// (lib/waiver-engine-core.mjs computeResolution) is mirrored here locally
+// rather than imported, since it is plain JS with JSDoc types, not a typed
+// module this file can import from.
+
+interface WaiverOutcomeRow {
+  sequence: number;
+  managerId: number;
+  playerId: number;
+  position: string;
+  amount: number;
+  outcome:
+    | "won"
+    | "player_taken"
+    | "skipped_funds"
+    | "skipped_position"
+    | "skipped_capacity"
+    | "lost_tie";
+  price: number | null;
+}
+
+interface WaiverOutcomeManager {
+  managerId: number;
+  short: string;
+}
+
+interface WaiverResolveResult {
+  ok: true;
+  dryRun: boolean;
+  applied: boolean;
+  seed: string;
+  winCount: number;
+  formCount: number;
+  bidCount: number;
+  outcomes: WaiverOutcomeRow[];
+  managers: WaiverOutcomeManager[];
+}
+
 function money(n: number | null | undefined): string {
   return n == null ? "?" : `$${n.toLocaleString()}`;
 }
@@ -180,6 +219,11 @@ export default function Console() {
   // click before anything else runs, not just once the busy state lands.
   const submittingRef = useRef(false);
 
+  // ---- waiver resolution panel (Stage 6) ----
+  const [waiverBusy, setWaiverBusy] = useState(false);
+  const [waiverResult, setWaiverResult] = useState<WaiverResolveResult | null>(null);
+  const [waiverError, setWaiverError] = useState<string | null>(null);
+
   useEffect(() => {
     setToken(window.localStorage.getItem("commissionerToken") ?? "");
   }, []);
@@ -198,6 +242,17 @@ export default function Console() {
   }, [lotId]);
 
   const managers = payload?.managers ?? [];
+
+  // Trades pause from a waiver's cutoff until its results publish (docs/
+  // DESIGN-WAIVERS.md 2.3): "resolving" covers the window once the engine has
+  // been kicked off; a still-"open" period past its own cutoff covers the gap
+  // between the clock passing and the commissioner actually running it.
+  const currentPeriod = payload?.currentPeriod ?? null;
+  const cutoffPassed =
+    currentPeriod?.cutoffAt != null && new Date(currentPeriod.cutoffAt).getTime() <= Date.now();
+  const tradesPaused =
+    currentPeriod?.kind === "waiver" &&
+    (currentPeriod.status === "resolving" || (currentPeriod.status === "open" && cutoffPassed));
   const winner = managers.find((m) => m.slot === winnerSlot) ?? null;
   const priceDigits = digitsOnly(priceText);
   const price = priceDigits ? parseInt(priceDigits, 10) : null;
@@ -361,6 +416,27 @@ export default function Console() {
       if (ok) resetTradeForm();
     } finally {
       submittingRef.current = false;
+    }
+  }
+
+  /** POST /api/waiver/resolve (dry run or real). Mirrors write()'s pattern:
+   * the top status strip always gets the server's message; this panel also
+   * keeps its own copy of the last result/rejection so the outcome table
+   * renders without scrolling back up to the status line. */
+  async function runWaiverResolve(dryRun: boolean) {
+    setWaiverBusy(true);
+    setWaiverError(null);
+    try {
+      const { ok, data } = await write("/api/waiver/resolve", "POST", dryRun ? { dryRun: true } : {});
+      if (ok && data) {
+        setWaiverResult(data as unknown as WaiverResolveResult);
+      } else {
+        setWaiverResult(null);
+        const msg = typeof data?.message === "string" ? data.message : "Resolution failed.";
+        setWaiverError(msg);
+      }
+    } finally {
+      setWaiverBusy(false);
     }
   }
 
@@ -531,6 +607,12 @@ export default function Console() {
               on submit lives in submitTrade above) ---- */}
           {tradeOpen && (
             <div className="con-trade">
+              {tradesPaused && (
+                <p className="con-waiver-pause" data-testid="trade-pause-banner">
+                  Trades are paused while {currentPeriod?.label} resolves; they reopen when the
+                  results publish.
+                </p>
+              )}
               <div className="con-traderow">
                 <div className="con-tradecol">
                   <label className="con-tlabel">
@@ -645,7 +727,7 @@ export default function Console() {
                 <button
                   data-testid="trade-submit"
                   className="con-btn primary"
-                  disabled={!tradeValid || busy}
+                  disabled={!tradeValid || busy || tradesPaused}
                   onClick={submitTrade}
                 >
                   Submit trade
@@ -769,6 +851,79 @@ export default function Console() {
           </div>
         </section>
       </div>
+
+      {/* ---- waiver resolution (Stage 6, only during a waiver period) ---- */}
+      {currentPeriod?.kind === "waiver" && (
+        <section className="con-waiver-panel" data-testid="waiver-panel">
+          <h2 className="con-colh">Waiver resolution - {currentPeriod.label}</h2>
+          <div className="con-btnrow">
+            <button
+              data-testid="waiver-dry-run"
+              className="con-btn quiet"
+              disabled={waiverBusy}
+              onClick={() => runWaiverResolve(true)}
+            >
+              Dry run
+            </button>
+            <button
+              data-testid="waiver-apply"
+              className="con-btn blue"
+              disabled={waiverBusy}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Apply the waiver resolution for ${currentPeriod.label}? This writes sales and drops, closes the period and cannot be undone.`,
+                  )
+                ) {
+                  runWaiverResolve(false);
+                }
+              }}
+            >
+              Apply resolution
+            </button>
+          </div>
+
+          {waiverError && (
+            <p className="con-waiver-error" data-testid="waiver-error">
+              {waiverError}
+            </p>
+          )}
+
+          {waiverResult && (
+            <div data-testid="waiver-result">
+              <p className="con-waiver-summary">
+                {waiverResult.dryRun ? "Dry run" : "Applied"} - seed <code>{waiverResult.seed}</code>,{" "}
+                {waiverResult.winCount} won of {waiverResult.bidCount} bids across{" "}
+                {waiverResult.formCount} forms.
+              </p>
+              <table className="rb-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Manager</th>
+                    <th>Player</th>
+                    <th>Amount</th>
+                    <th>Outcome</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waiverResult.outcomes.slice(0, 20).map((o) => (
+                    <tr key={o.sequence}>
+                      <td>{o.sequence}</td>
+                      <td>{waiverResult.managers.find((m) => m.managerId === o.managerId)?.short ?? o.managerId}</td>
+                      <td>{o.playerId}</td>
+                      <td>{money(o.amount)}</td>
+                      <td>{o.outcome}</td>
+                      <td>{money(o.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ---- bottom TV bar ---- */}
       <div className="con-tvbar">

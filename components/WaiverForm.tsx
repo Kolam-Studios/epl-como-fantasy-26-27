@@ -12,6 +12,7 @@
 // written to localStorage/sessionStorage, and never logged.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { Position } from "@/lib/config";
 import { foldedIncludes } from "@/lib/text-core.mjs";
 
@@ -571,6 +572,9 @@ export default function WaiverForm() {
               </div>
             )}
             <button onClick={editSubmission}>Edit this submission</button>
+            <p className="statusline" style={{ margin: "12px 0 0" }}>
+              <Link href="/waiver/history">View your submission history</Link>
+            </p>
           </div>
         ) : step === 1 ? (
           <div>

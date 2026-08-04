@@ -108,7 +108,13 @@ function TradeCard({ trade }: { trade: TradeRow }) {
   );
 }
 
-export default function TradesView() {
+// A trade row as the API actually serves it (lib/trades-core.mjs stamps
+// periodId on every row); lib/trades.ts's TradeRow type does not declare the
+// field yet, so it is read here via a local, additive type rather than
+// editing that shared type.
+type TradeRowWithPeriod = TradeRow & { periodId?: number | null };
+
+export default function TradesView({ periodId }: { periodId?: number } = {}) {
   const [payload, setPayload] = useState<TradesPayload | null>(null);
   const [error, setError] = useState(false);
   const isPhone = useIsPhone();
@@ -147,6 +153,15 @@ export default function TradesView() {
     );
   }
 
+  // periodId is a client-side filter only (the season log's period_id column
+  // is already stamped at write time - see lib/trades-core.mjs); when unset,
+  // behavior is byte-identical to before this prop existed.
+  const trades =
+    periodId == null
+      ? payload.trades
+      : (payload.trades as TradeRowWithPeriod[]).filter((t) => t.periodId === periodId);
+  const count = periodId == null ? payload.count : trades.length;
+
   return (
     <div className="tr-screen" data-testid="trades-page">
       <header className="tr-head">
@@ -156,17 +171,17 @@ export default function TradesView() {
         </div>
         <div className="tr-head-right">
           <span className="tr-count" data-testid="trades-count">
-            {payload.count} trade{payload.count === 1 ? "" : "s"}
+            {count} trade{count === 1 ? "" : "s"}
           </span>
           <button className="tr-refresh" onClick={load}>refresh</button>
         </div>
       </header>
 
-      {payload.count === 0 ? (
+      {count === 0 ? (
         <div className="tr-empty" data-testid="trades-empty">No trades yet.</div>
       ) : (
         <div className="tr-list">
-          {payload.trades.map((t) => (
+          {trades.map((t) => (
             <TradeCard key={t.id} trade={t} />
           ))}
         </div>

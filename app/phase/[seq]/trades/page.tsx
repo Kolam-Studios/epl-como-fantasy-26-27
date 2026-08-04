@@ -71,5 +71,5 @@ export default function PhaseTradesPage() {
       </Shell>
     );
   }
-  return <TradesView />;
+  return <TradesView periodId={period.id} />;
 }
