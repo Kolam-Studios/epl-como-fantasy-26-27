@@ -1,0 +1,761 @@
+[
+  {
+    "season": "2026-27",
+    "managers": 7,
+    "budget": 3000,
+    "squadSize": 15,
+    "recordNote": "complete, 105 buys, auction 2026-08-02; season not yet played",
+    "source": "epl-como-fantasy-26-27 app export",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": null,
+    "inProgress": true,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Darryl",
+        "players": 15,
+        "spend": 2532,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 2626,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 2055,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Raymond",
+        "players": 15,
+        "spend": 1648,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Robbie",
+        "players": 15,
+        "spend": 610,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Trent",
+        "players": 15,
+        "spend": 2900,
+        "squadPoints": null,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Varun",
+        "players": 15,
+        "spend": 2822,
+        "squadPoints": null,
+        "bestXiPoints": null
+      }
+    ],
+    "topBuy": {
+      "player": "Haaland",
+      "manager": "Lakshman",
+      "price": 1350
+    },
+    "bestValueBuy": null,
+    "totalSpend": 15193,
+    "buyCount": 105
+  },
+  {
+    "season": "2025-26",
+    "managers": 7,
+    "budget": 2000,
+    "squadSize": 15,
+    "recordNote": "complete, 105 buys; spends reconcile to sheet",
+    "source": "COMO 25/26 live auction grid",
+    "champion": "Mayoori",
+    "runnerUp": "Dom",
+    "championNote": null,
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Dom",
+        "players": 15,
+        "spend": 1905,
+        "squadPoints": 1924,
+        "bestXiPoints": 1588
+      },
+      {
+        "manager": "Mayoori",
+        "players": 15,
+        "spend": 1966,
+        "squadPoints": 1782,
+        "bestXiPoints": 1517
+      },
+      {
+        "manager": "Sara",
+        "players": 15,
+        "spend": 1931,
+        "squadPoints": 1717,
+        "bestXiPoints": 1446
+      },
+      {
+        "manager": "Robbie",
+        "players": 15,
+        "spend": 1987,
+        "squadPoints": 1704,
+        "bestXiPoints": 1457
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 1996,
+        "squadPoints": 1680,
+        "bestXiPoints": 1428
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 1945,
+        "squadPoints": 1654,
+        "bestXiPoints": 1391
+      },
+      {
+        "manager": "Darryl",
+        "players": 15,
+        "spend": 1756,
+        "squadPoints": 1506,
+        "bestXiPoints": 1282
+      }
+    ],
+    "topBuy": {
+      "player": "M.Salah",
+      "manager": "Milo",
+      "price": 1000
+    },
+    "bestValueBuy": {
+      "player": "Senesi",
+      "manager": "Dom",
+      "price": 50,
+      "fplPoints": 175
+    },
+    "totalSpend": 13486,
+    "buyCount": 105
+  },
+  {
+    "season": "2024-25",
+    "managers": null,
+    "budget": null,
+    "squadSize": null,
+    "recordNote": "no EPL auction run (BBL season instead)",
+    "source": null,
+    "champion": null,
+    "runnerUp": null,
+    "championNote": null,
+    "inProgress": false,
+    "played": false,
+    "perManager": [],
+    "topBuy": null,
+    "bestValueBuy": null,
+    "totalSpend": null,
+    "buyCount": 0
+  },
+  {
+    "season": "2023-24",
+    "managers": 8,
+    "budget": 5000,
+    "squadSize": 15,
+    "recordNote": "live auction + Tier 4 blind bids; rosters incomplete in sheet (6-14 kept per manager); January rebid not run",
+    "source": "Como 2023/24 sheet (Teams Bid 1 + Blind Bids 1)",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": "no ladder recorded",
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Robbie",
+        "players": 12,
+        "spend": 4801,
+        "squadPoints": 1407,
+        "bestXiPoints": 1383
+      },
+      {
+        "manager": "Darryl",
+        "players": 12,
+        "spend": 5057,
+        "squadPoints": 1339,
+        "bestXiPoints": 1328
+      },
+      {
+        "manager": "Damien",
+        "players": 11,
+        "spend": 4764,
+        "squadPoints": 1332,
+        "bestXiPoints": 1331
+      },
+      {
+        "manager": "Milo",
+        "players": 9,
+        "spend": 4957,
+        "squadPoints": 1046,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Lakshman",
+        "players": 9,
+        "spend": 4876,
+        "squadPoints": 1009,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Jonno",
+        "players": 9,
+        "spend": 4675,
+        "squadPoints": 1002,
+        "bestXiPoints": null
+      },
+      {
+        "manager": "Trent",
+        "players": 14,
+        "spend": 4581,
+        "squadPoints": 930,
+        "bestXiPoints": 824
+      },
+      {
+        "manager": "Seb",
+        "players": 6,
+        "spend": 4100,
+        "squadPoints": 685,
+        "bestXiPoints": null
+      }
+    ],
+    "topBuy": {
+      "player": "Haaland",
+      "manager": "Damien",
+      "price": 2600
+    },
+    "bestValueBuy": {
+      "player": "Olise",
+      "manager": "Trent",
+      "price": 51,
+      "fplPoints": 125
+    },
+    "totalSpend": 37811,
+    "buyCount": 82
+  },
+  {
+    "season": "2022-23",
+    "managers": null,
+    "budget": null,
+    "squadSize": null,
+    "recordNote": "no auction run (FPL data sheet only)",
+    "source": "COMO FPL Data 2022/2023",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": null,
+    "inProgress": false,
+    "played": false,
+    "perManager": [],
+    "topBuy": null,
+    "bestValueBuy": null,
+    "totalSpend": null,
+    "buyCount": 0
+  },
+  {
+    "season": "2021-22",
+    "managers": 8,
+    "budget": 3000,
+    "squadSize": 15,
+    "recordNote": "settled squads (Teams Bid 2), 120 buys, complete",
+    "source": "Como 2021/22 sheet",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": "no ladder recorded",
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Chris",
+        "players": 15,
+        "spend": 4314,
+        "squadPoints": 1982,
+        "bestXiPoints": 1609
+      },
+      {
+        "manager": "Robbie",
+        "players": 15,
+        "spend": 4574,
+        "squadPoints": 1942,
+        "bestXiPoints": 1578
+      },
+      {
+        "manager": "Damien",
+        "players": 15,
+        "spend": 2839,
+        "squadPoints": 1886,
+        "bestXiPoints": 1488
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 3248,
+        "squadPoints": 1857,
+        "bestXiPoints": 1560
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 3064,
+        "squadPoints": 1841,
+        "bestXiPoints": 1510
+      },
+      {
+        "manager": "Jonno",
+        "players": 15,
+        "spend": 1498,
+        "squadPoints": 1808,
+        "bestXiPoints": 1444
+      },
+      {
+        "manager": "Trent",
+        "players": 15,
+        "spend": 4175,
+        "squadPoints": 1721,
+        "bestXiPoints": 1467
+      },
+      {
+        "manager": "Doug",
+        "players": 15,
+        "spend": 3560,
+        "squadPoints": 1687,
+        "bestXiPoints": 1424
+      }
+    ],
+    "topBuy": {
+      "player": "Salah",
+      "manager": "Milo",
+      "price": 2000
+    },
+    "bestValueBuy": {
+      "player": "Barnes",
+      "manager": "Milo",
+      "price": 50,
+      "fplPoints": 137
+    },
+    "totalSpend": 27272,
+    "buyCount": 120
+  },
+  {
+    "season": "2020-21",
+    "managers": 8,
+    "budget": 3000,
+    "squadSize": 15,
+    "recordNote": "auction (Data) plus a blind bargain round (Bid1 Bargains) and two rebids (Data2, Data3); no settled squad table; auction+bargain gives 15 each except Robbie, who won 9 and took no bargain-round player",
+    "source": "COMO 20/21 sheet (Data, Data2, Data3, Bid1 Bargains)",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": "no ladder recorded",
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Trent",
+        "players": 15,
+        "spend": 1019,
+        "squadPoints": 1719,
+        "bestXiPoints": 1428
+      },
+      {
+        "manager": "Jonathan",
+        "players": 15,
+        "spend": 740,
+        "squadPoints": 1705,
+        "bestXiPoints": 1451
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 1611,
+        "squadPoints": 1614,
+        "bestXiPoints": 1510
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 1159,
+        "squadPoints": 1477,
+        "bestXiPoints": 1342
+      },
+      {
+        "manager": "Alex Patton",
+        "players": 15,
+        "spend": 1031,
+        "squadPoints": 1339,
+        "bestXiPoints": 1264
+      },
+      {
+        "manager": "Damien",
+        "players": 15,
+        "spend": 1072,
+        "squadPoints": 1263,
+        "bestXiPoints": 1153
+      },
+      {
+        "manager": "Hin",
+        "players": 15,
+        "spend": 1211,
+        "squadPoints": 1180,
+        "bestXiPoints": 1054
+      },
+      {
+        "manager": "Robbie",
+        "players": 9,
+        "spend": 1130,
+        "squadPoints": 787,
+        "bestXiPoints": null
+      }
+    ],
+    "topBuy": {
+      "player": "Werner",
+      "manager": "Lakshman",
+      "price": 750
+    },
+    "bestValueBuy": {
+      "player": "Wan-Bissaka",
+      "manager": "Jonathan",
+      "price": 55,
+      "fplPoints": 144
+    },
+    "totalSpend": 34127,
+    "buyCount": 319
+  },
+  {
+    "season": "2019-20",
+    "managers": 8,
+    "budget": 3000,
+    "squadSize": 15,
+    "recordNote": "settled squads only (Team lists), 120 buys, spends reconcile to the sheet; no bid-by-bid log survives",
+    "source": "Como 2019/20 sheet (Team lists)",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": "no ladder recorded",
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Cody",
+        "players": 15,
+        "spend": 2866,
+        "squadPoints": 1836,
+        "bestXiPoints": 1429
+      },
+      {
+        "manager": "Olli",
+        "players": 15,
+        "spend": 2750,
+        "squadPoints": 1728,
+        "bestXiPoints": 1435
+      },
+      {
+        "manager": "Ash",
+        "players": 15,
+        "spend": 2023,
+        "squadPoints": 1606,
+        "bestXiPoints": 1343
+      },
+      {
+        "manager": "Chris",
+        "players": 15,
+        "spend": 2348,
+        "squadPoints": 1601,
+        "bestXiPoints": 1429
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 2992,
+        "squadPoints": 1575,
+        "bestXiPoints": 1491
+      },
+      {
+        "manager": "Trent",
+        "players": 15,
+        "spend": 2838,
+        "squadPoints": 1469,
+        "bestXiPoints": 1279
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 2848,
+        "squadPoints": 1339,
+        "bestXiPoints": 1121
+      },
+      {
+        "manager": "Vikash",
+        "players": 15,
+        "spend": 1293,
+        "squadPoints": 741,
+        "bestXiPoints": 741
+      }
+    ],
+    "topBuy": {
+      "player": "Salah",
+      "manager": "Lakshman",
+      "price": 1050
+    },
+    "bestValueBuy": {
+      "player": "David Silva",
+      "manager": "Cody",
+      "price": 50,
+      "fplPoints": 139
+    },
+    "totalSpend": 19958,
+    "buyCount": 120
+  },
+  {
+    "season": "2018-19",
+    "managers": 9,
+    "budget": 3000,
+    "squadSize": 15,
+    "recordNote": "full auction (135) plus four rebids (529) and a bargain-bin blind round (45); rebid 1 and 2 record winners but not prices; settled squads from Rebid Teams (135), whose Cost column is rebid spend only, blank for players retained from the auction",
+    "source": "Como 2018/19 sheet (Auction, Rebid #1-4, Rebid #1 Bargain Bin, Rebid Teams)",
+    "champion": null,
+    "runnerUp": null,
+    "championNote": "no ladder recorded",
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Arjav",
+        "players": 15,
+        "spend": 0,
+        "squadPoints": 2158,
+        "bestXiPoints": 1786
+      },
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 0,
+        "squadPoints": 2104,
+        "bestXiPoints": 1803
+      },
+      {
+        "manager": "Oliver",
+        "players": 15,
+        "spend": 745,
+        "squadPoints": 1959,
+        "bestXiPoints": 1674
+      },
+      {
+        "manager": "Alex",
+        "players": 15,
+        "spend": 564,
+        "squadPoints": 1711,
+        "bestXiPoints": 1447
+      },
+      {
+        "manager": "Cody",
+        "players": 15,
+        "spend": 2215,
+        "squadPoints": 1710,
+        "bestXiPoints": 1417
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 1621,
+        "squadPoints": 1684,
+        "bestXiPoints": 1421
+      },
+      {
+        "manager": "Chris",
+        "players": 15,
+        "spend": 1267,
+        "squadPoints": 1631,
+        "bestXiPoints": 1320
+      },
+      {
+        "manager": "Trent",
+        "players": 15,
+        "spend": 1094,
+        "squadPoints": 1582,
+        "bestXiPoints": 1370
+      },
+      {
+        "manager": "Vikash",
+        "players": 15,
+        "spend": 285,
+        "squadPoints": 1393,
+        "bestXiPoints": 1099
+      }
+    ],
+    "topBuy": {
+      "player": "Lukaku",
+      "manager": "Lakshman",
+      "price": 1150
+    },
+    "bestValueBuy": {
+      "player": "Wilson",
+      "manager": "Arjav",
+      "price": 50,
+      "fplPoints": 168
+    },
+    "totalSpend": 80637,
+    "buyCount": 844
+  },
+  {
+    "season": "2017-18",
+    "managers": 6,
+    "budget": 2000,
+    "squadSize": 15,
+    "recordNote": "two bid logs (Bidding List 1 auction 49 buys, Bidding List 2 rebid 42 buys) plus settled squads (Teams, 90 buys); season scored in three sessions, final ladder on Sessions",
+    "source": "Como 2017/18 sheet (Bidding List 1/2 + Teams + Sessions)",
+    "champion": "Lakshman",
+    "runnerUp": "Milo",
+    "championNote": null,
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Lakshman",
+        "players": 15,
+        "spend": 1830,
+        "squadPoints": 1790,
+        "bestXiPoints": 1523
+      },
+      {
+        "manager": "Ambrose",
+        "players": 15,
+        "spend": 1861,
+        "squadPoints": 1765,
+        "bestXiPoints": 1453
+      },
+      {
+        "manager": "Robbie",
+        "players": 15,
+        "spend": 1574,
+        "squadPoints": 1714,
+        "bestXiPoints": 1459
+      },
+      {
+        "manager": "Farhaan",
+        "players": 15,
+        "spend": 1309,
+        "squadPoints": 1525,
+        "bestXiPoints": 1265
+      },
+      {
+        "manager": "Milo",
+        "players": 15,
+        "spend": 1794,
+        "squadPoints": 1513,
+        "bestXiPoints": 1430
+      },
+      {
+        "manager": "Dinesh",
+        "players": 15,
+        "spend": 1951,
+        "squadPoints": 1428,
+        "bestXiPoints": 1349
+      }
+    ],
+    "topBuy": {
+      "player": "Lukaku",
+      "manager": "Lakshman",
+      "price": 560
+    },
+    "bestValueBuy": {
+      "player": "Ederson",
+      "manager": "Robbie",
+      "price": 50,
+      "fplPoints": 158
+    },
+    "totalSpend": 15923,
+    "buyCount": 181
+  },
+  {
+    "season": "2016-17",
+    "managers": 7,
+    "budget": null,
+    "squadSize": 18,
+    "recordNote": "settled squads only (Teams tab, 18 slots each), 126 buys; no bid-by-bid log survives; squad costs do not reconcile to the tab's own TOTAL SPENT row, which is stale against in-season transfers; final ladder recorded on Scoring",
+    "source": "Como 2016/17 sheet (Teams + Scoring)",
+    "champion": "Robbie",
+    "runnerUp": "Varun",
+    "championNote": null,
+    "inProgress": false,
+    "played": true,
+    "perManager": [
+      {
+        "manager": "Robbie",
+        "players": 18,
+        "spend": 1620,
+        "squadPoints": 2317,
+        "bestXiPoints": 1841
+      },
+      {
+        "manager": "Varun",
+        "players": 18,
+        "spend": 1811,
+        "squadPoints": 2269,
+        "bestXiPoints": 1654
+      },
+      {
+        "manager": "Lakshman",
+        "players": 18,
+        "spend": 1727,
+        "squadPoints": 2004,
+        "bestXiPoints": 1479
+      },
+      {
+        "manager": "Arj",
+        "players": 18,
+        "spend": 2047,
+        "squadPoints": 1862,
+        "bestXiPoints": 1491
+      },
+      {
+        "manager": "Margit",
+        "players": 18,
+        "spend": 1610,
+        "squadPoints": 1841,
+        "bestXiPoints": 1458
+      },
+      {
+        "manager": "Milo",
+        "players": 18,
+        "spend": 1712,
+        "squadPoints": 1763,
+        "bestXiPoints": 1338
+      },
+      {
+        "manager": "Ambrose",
+        "players": 18,
+        "spend": 1837,
+        "squadPoints": 1695,
+        "bestXiPoints": 1308
+      }
+    ],
+    "topBuy": {
+      "player": "Ibrahimovic",
+      "manager": "Arj",
+      "price": 510
+    },
+    "bestValueBuy": {
+      "player": "Lallana",
+      "manager": "Varun",
+      "price": 50,
+      "fplPoints": 139
+    },
+    "totalSpend": 12364,
+    "buyCount": 126
+  }
+]
