@@ -61,3 +61,9 @@ An adversarial subagent attacked the transaction as CLAUDE.md demands. It confir
 ## Follow-up issues filed tonight (all scrubbed)
 
 #77 docs refresh, #78 reveal format, #79 Bid 2 period-scoped lot layer, #80 history page name policy, #81 projector variant, #82 no-bid reopen, #83 AEST/AEDT.
+
+## Morning rulings, actioned (commit f62de37)
+
+1. Names approved: the COMO history page (mockup G) is built and live at /history, fed from the public history dataset via scripts/build-history-data.mjs (re-run it if the CSVs change). Issue #80 closed. One naming quirk surfaced for a future call: the mockups tag COMO2425 as the 2024-25 season, while the ratified spec calls the current 2026-27 season COMO2526 - the page therefore takes the current season's code from config and labels past seasons by plain years rather than guessing codes.
+2. Deploy checklist acknowledged; steps unchanged, all owner-executed.
+3. Sydney time: all cutoffs are now 5:00pm Sydney local (the Oct/Nov/Feb/Mar cutoffs moved to +11:00). The idempotent seed converges production rows when db:setup runs at deploy. Issue #83 closed.
