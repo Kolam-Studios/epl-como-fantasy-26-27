@@ -28,6 +28,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ManagerState, StatePayload } from "@/lib/state";
 import { usePolledPlayers } from "@/components/tv-common";
+import { foldedIncludes } from "@/lib/text-core.mjs";
 
 const TV_VIEWS = ["block", "reveal", "squads", "ledger", "paused"] as const;
 
@@ -72,6 +73,19 @@ interface WaiverResolveResult {
 
 function money(n: number | null | undefined): string {
   return n == null ? "?" : `$${n.toLocaleString()}`;
+}
+
+// ---- Stage 7: console operator additions (mockup H, docs/DESIGN-WAIVERS.md
+// 3H) ------------------------------------------------------------------
+// ManagerState (lib/state.ts) does not declare satOut in its TypeScript
+// shape, but the runtime payload always carries it (lib/state-core.mjs sets
+// it from managers.sat_out on every manager row). This file is scoped to
+// only touch app/console/page.tsx and app/globals.css, so the field is read
+// through this narrow local extension instead of widening the shared type.
+type ManagerWithSatOut = ManagerState & { satOut?: boolean };
+
+function isSatOut(m: ManagerState): boolean {
+  return (m as ManagerWithSatOut).satOut === true;
 }
 
 /** Digits-only text input -> integer, treating empty as null (price) or 0 (cash). */
@@ -224,6 +238,17 @@ export default function Console() {
   const [waiverResult, setWaiverResult] = useState<WaiverResolveResult | null>(null);
   const [waiverError, setWaiverError] = useState<string | null>(null);
 
+  // ---- Stage 7: build-queue button (mockup H item 1) ----
+  const [buildBusy, setBuildBusy] = useState(false);
+  const [buildConfirmMsg, setBuildConfirmMsg] = useState<string | null>(null);
+
+  // ---- Stage 7: sit-out toggles (mockup H item 2) ----
+  const [sitOutBusySlot, setSitOutBusySlot] = useState<number | null>(null);
+
+  // ---- Stage 7: recent-lots per-lot void (mockup H item 4) ----
+  const [voidBusySaleId, setVoidBusySaleId] = useState<number | null>(null);
+  const [voidedMsgBySaleId, setVoidedMsgBySaleId] = useState<Record<number, string>>({});
+
   useEffect(() => {
     setToken(window.localStorage.getItem("commissionerToken") ?? "");
   }, []);
@@ -262,15 +287,19 @@ export default function Console() {
   // Match unsold players against the query (display name or raw name), most
   // last-season points first so marquee names surface. A short list keeps the
   // operator screen usable; a >=2 char floor avoids dumping the whole pool.
-  const nomQ = nomQuery.trim().toLowerCase();
+  // Stage 7 / mockup H item 3: matching folds diacritics on both sides
+  // (foldedIncludes, lib/text-core.mjs) so typing plain ASCII (e.g. "sesko")
+  // finds accented names ("Šeško") as stored; the display below always keeps
+  // the true spelling.
+  const nomQ = nomQuery.trim();
   const nomMatches =
     nomQ.length >= 2 && playersPayload
       ? playersPayload.players
           .filter(
             (p) =>
               !p.sold &&
-              (`${p.displayName ?? ""}`.toLowerCase().includes(nomQ) ||
-                `${p.name ?? ""}`.toLowerCase().includes(nomQ)),
+              (foldedIncludes(`${p.displayName ?? ""}`, nomQ) ||
+                foldedIncludes(`${p.name ?? ""}`, nomQ)),
           )
           .sort((a, b) => (b.pts ?? 0) - (a.pts ?? 0))
           .slice(0, 8)
@@ -440,6 +469,76 @@ export default function Console() {
     }
   }
 
+  /** POST /api/lot {action: "build_queue"} (mockup H item 1). Confirm-gated,
+   * same window.confirm idiom as "End phase one" / "Undo last". On success
+   * the route returns the shuffled queue itself, so the lot count is shown
+   * immediately without waiting on the next poll; the board still refreshes
+   * from the poll regardless. */
+  async function buildQueue() {
+    if (
+      !window.confirm(
+        "Build the lot queue and open lot 1? This shuffles the pool by tier and cannot be re-run once a sale or no-bid is recorded.",
+      )
+    ) {
+      return;
+    }
+    setBuildBusy(true);
+    setBuildConfirmMsg(null);
+    try {
+      const { ok, data } = await write("/api/lot", "POST", { action: "build_queue" });
+      if (ok) {
+        const queue = data && Array.isArray(data.queue) ? data.queue : null;
+        setBuildConfirmMsg(
+          queue
+            ? `Queue built, ${queue.length} lots ordered. Lot 1 is now on the block.`
+            : "Queue built. Lot 1 is now on the block.",
+        );
+      }
+    } finally {
+      setBuildBusy(false);
+    }
+  }
+
+  /** POST /api/manager/sit-out (mockup H item 2). The row re-renders itself
+   * from the next poll (payload.managers[].satOut); this only tracks which
+   * slot is mid-request so a double click cannot fire twice. */
+  async function toggleSitOut(m: ManagerState) {
+    if (sitOutBusySlot != null) return;
+    setSitOutBusySlot(m.slot);
+    try {
+      await write("/api/manager/sit-out", "POST", {
+        managerId: m.id,
+        satOut: !isSatOut(m),
+      });
+    } finally {
+      setSitOutBusySlot(null);
+    }
+  }
+
+  /** DELETE /api/draft/:id (mockup H item 4, "skip-aware undo" per-lot half).
+   * Confirm-gated with a reason prompt, same idiom as the other dangerous
+   * console actions. Voids exactly this sale and leaves the queue position
+   * alone - no walking back the no-bid lots recorded after it (that reopen
+   * half is a separate follow-up, noted in the panel below). */
+  async function voidLot(saleId: number, label: string) {
+    if (voidBusySaleId != null) return;
+    if (!window.confirm(`Void ${label}? This cannot be undone from here.`)) return;
+    const reason = window.prompt(`Reason for voiding ${label}:`, "");
+    if (reason == null) return;
+    setVoidBusySaleId(saleId);
+    try {
+      const { ok, data } = await write(`/api/draft/${saleId}`, "DELETE", { reason });
+      if (ok) {
+        const msg =
+          (data && typeof data.message === "string" && data.message) ||
+          `${label} voided. Player returned to the pool.`;
+        setVoidedMsgBySaleId((prev) => ({ ...prev, [saleId]: msg }));
+      }
+    } finally {
+      setVoidBusySaleId(null);
+    }
+  }
+
   // Night progress, derived from what the payload carries (managers[].squad
   // is the FULL owned list, not just recent sales). No-bid count is NOT
   // derivable from the payload (needs lot_events) - omitted.
@@ -457,6 +556,12 @@ export default function Console() {
     payload?.nominationTurn != null
       ? managers.find((m) => m.slot === payload.nominationTurn)?.short ?? null
       : null;
+
+  // Stage 7 / mockup H item 1: the button disables itself the moment any
+  // sale exists this auction, so build_queue can never be re-run mid
+  // auction from the console (the API also rejects this server-side).
+  const queueAlreadyBuilt =
+    (payload?.recentSales?.length ?? 0) > 0 || payload?.currentLot != null;
 
   return (
     <main data-testid="console-page" className="screen console">
@@ -496,6 +601,61 @@ export default function Console() {
         {status || "no writes yet"}
       </p>
 
+      {/* ---- Stage 7 / mockup H item 1: build queue button ---- */}
+      <section className="con-setup-panel" data-testid="build-queue-panel">
+        <h2 className="con-colh">Auction setup</h2>
+        <button
+          data-testid="build-queue"
+          className="con-btn primary"
+          disabled={queueAlreadyBuilt || buildBusy || busy}
+          onClick={buildQueue}
+        >
+          Build queue + open lot 1
+        </button>
+        <p className="con-setup-sub">
+          {queueAlreadyBuilt
+            ? "Disabled: a sale is already on record or a lot is already on the block, so the queue cannot be rebuilt from here."
+            : "Shuffles within tiers, price descending, and puts the first lot on the block. Disables itself the moment any sale exists."}
+        </p>
+        {buildConfirmMsg && (
+          <p className="con-setup-confirm" data-testid="build-queue-confirm">
+            {buildConfirmMsg}
+          </p>
+        )}
+      </section>
+
+      {/* ---- Stage 7 / mockup H item 2: sit-out toggles ---- */}
+      <section className="con-setup-panel" data-testid="sitout-panel">
+        <h2 className="con-colh">Manager availability</h2>
+        <div className="con-switchrow">
+          {managers.map((m) => {
+            const satOut = isSatOut(m);
+            return (
+              <div key={m.slot} className="con-switch-item">
+                <span className="con-switch-lab">{m.short}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={satOut}
+                  aria-label={`${m.short} sat out`}
+                  data-testid={`sitout-toggle-${m.slot}`}
+                  className={`con-switch${satOut ? " on" : ""}`}
+                  disabled={sitOutBusySlot === m.slot}
+                  onClick={() => toggleSitOut(m)}
+                >
+                  <span className="con-switch-knob" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <p className="con-setup-sub">
+          Ticked managers are sat out: greyed in the sale-entry picker below, skipped in the
+          phase-2 nomination rotation, and hidden from the waiver form&apos;s manager dropdown.
+          Untick to rejoin instantly, mid auction.
+        </p>
+      </section>
+
       <div className="con-grid">
         {/* ---- LEFT: current lot + sale entry ---- */}
         <section className="con-col">
@@ -519,13 +679,19 @@ export default function Console() {
           <div className="con-mgr8">
             {managers.map((m) => {
               const size = m.squad.length + m.openSlots;
+              const satOut = isSatOut(m);
               // Only squad-complete ineligibility is derivable client-side;
               // position-full ("FWD full") needs quotas the payload lacks.
-              const disabled = m.squadComplete;
+              // Stage 7 / mockup H item 2: a sat-out manager still renders in
+              // this picker (the record stays visible) but is greyed and
+              // non-clickable, same as the squad-complete case.
+              const disabled = m.squadComplete || satOut;
               const selected = winnerSlot === m.slot;
-              const sub = m.squadComplete
-                ? `${m.squad.length}/${size}`
-                : `max ${money(m.maxBid)}`;
+              const sub = satOut
+                ? "sat out"
+                : m.squadComplete
+                  ? `${m.squad.length}/${size}`
+                  : `max ${money(m.maxBid)}`;
               return (
                 <button
                   key={m.slot}
@@ -851,6 +1017,61 @@ export default function Console() {
           </div>
         </section>
       </div>
+
+      {/* ---- Stage 7 / mockup H item 4: skip-aware undo, per-lot correction.
+          Replaces walking back multiple lots to fix one sale: each recent
+          sale gets its own void, confirm-gated with a reason prompt (DELETE
+          /api/draft/[id]). The no-bid reopen half of the mockup is a
+          follow-up (a no-bid lot has no sale row to key off), left as the
+          muted note below. ---- */}
+      <section className="con-recent-panel" data-testid="recent-lots-panel">
+        <h2 className="con-colh">Recent lots</h2>
+        {(payload?.recentSales ?? []).length === 0 ? (
+          <p className="con-tempty">No sales recorded yet.</p>
+        ) : (
+          <div className="con-lotlist" data-testid="recent-lots-list">
+            {(payload?.recentSales ?? []).slice(0, 10).map((s) => {
+              // Waiver-era wins carry no lot number; label them as waiver signings.
+              const label = s.lotNo != null ? `lot ${s.lotNo}` : "waiver signing";
+              const msg = voidedMsgBySaleId[s.saleId];
+              const time = new Date(s.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return (
+                <div key={s.saleId} className="con-lotrow" data-testid={`recent-lot-${s.saleId}`}>
+                  <div className="con-lotrow-main">
+                    <span className="con-lotrow-no">{s.lotNo != null ? `Lot ${s.lotNo}` : "Waiver"}</span>
+                    <span className="con-lotrow-name">{s.displayName ?? s.playerName}</span>
+                    <span className="con-lotrow-meta">
+                      {s.managerShort ?? "?"} - {money(s.price)} - {time}
+                    </span>
+                  </div>
+                  <div className="con-lotrow-actions">
+                    <button
+                      type="button"
+                      data-testid={`void-lot-${s.saleId}`}
+                      className="con-btn ghost small"
+                      disabled={busy || voidBusySaleId === s.saleId || msg != null}
+                      onClick={() => voidLot(s.saleId, label)}
+                    >
+                      Void
+                    </button>
+                  </div>
+                  {msg && (
+                    <p className="con-lotrow-msg" data-testid={`void-lot-msg-${s.saleId}`}>
+                      {msg}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <p className="con-tempty con-recent-note">
+          No-bid lots reopen via nomination in phase 2.
+        </p>
+      </section>
 
       {/* ---- waiver resolution (Stage 6, only during a waiver period) ---- */}
       {currentPeriod?.kind === "waiver" && (

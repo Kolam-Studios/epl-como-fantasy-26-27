@@ -2071,3 +2071,75 @@ a.squad-row.squad-row-link:hover { background: var(--chip); }
 .con-waiver-summary { font-size: 13px; color: var(--muted); margin: 10px 0; }
 
 /* end STAGE-6 SECTION */
+
+/* =====================================================================
+   STAGE-7 SECTION: console operator additions (mockup H, docs/DESIGN-
+   WAIVERS.md 3H) - build-queue button, sit-out toggles, recent-lots
+   per-lot void. All stage-7 CSS goes INSIDE this section, above the
+   closing marker.
+   ===================================================================== */
+
+/* ---- H1/H2: shared operator-panel shell (build queue + sit-out) ---- */
+.con-setup-panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 18px 20px;
+  margin: 0 0 16px;
+}
+.con-setup-sub { color: var(--muted); font-size: 12.5px; margin: 10px 0 0; }
+.con-setup-confirm { color: var(--bronze); font-weight: 600; font-size: 12.5px; margin: 10px 0 0; }
+
+/* ---- H2: sit-out switches (ported from mockup H's .h-switch) ---- */
+.con-switchrow { display: flex; gap: 18px; flex-wrap: wrap; }
+.con-switch-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.con-switch-lab { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.con-switch {
+  width: 34px;
+  height: 19px;
+  border-radius: 999px;
+  background: #232725;
+  border: 1px solid #343936;
+  position: relative;
+  padding: 0;
+  cursor: pointer;
+}
+.con-switch:disabled { opacity: 0.5; cursor: not-allowed; }
+.con-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.con-switch.on { background: rgba(201, 164, 76, 0.22); border-color: var(--bronze); }
+.con-switch.on .con-switch-knob { transform: translateX(15px); background: var(--bronze); }
+
+/* ---- H4: recent-lots list + per-lot void ---- */
+.con-recent-panel { margin-top: 22px; }
+.con-lotlist { display: flex; flex-direction: column; }
+.con-lotrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hair);
+  flex-wrap: wrap;
+}
+.con-lotrow:last-child { border-bottom: none; }
+.con-lotrow-main { font-size: 13.5px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.con-lotrow-no { color: var(--muted); font-weight: 600; }
+.con-lotrow-name { font-weight: 600; }
+.con-lotrow-meta { color: var(--muted); }
+.con-lotrow-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.con-lotrow-msg { flex-basis: 100%; color: var(--bronze); font-size: 12px; font-weight: 600; margin: -2px 0 0; }
+.con-recent-note { margin-top: 12px; }
+
+.con-btn.ghost { background: transparent; border: 1px solid #343936; color: var(--muted); box-shadow: none; }
+.con-btn.small { font-size: 12.5px; padding: 6px 12px; }
+
+/* end STAGE-7 SECTION */

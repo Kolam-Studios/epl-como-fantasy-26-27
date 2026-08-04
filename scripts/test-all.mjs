@@ -121,6 +121,7 @@ try {
     ["waiver form", ["scripts/test-waiver-form.mjs"]],
     ["waiver engine (pure)", ["scripts/test-waiver-engine.mjs"]],
     ["waiver resolution", ["scripts/test-waiver-resolution.mjs"]],
+    ["managers", ["scripts/test-managers.mjs"]],
     ["lot", ["scripts/test-lot.mjs"]],
     ["full night", ["scripts/test-full-night.mjs"]],
   ];
