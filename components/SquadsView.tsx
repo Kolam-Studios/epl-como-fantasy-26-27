@@ -1,142 +1,54 @@
 "use client";
 
-// The room - squads: a 1600x900 TV canvas, 4x2 grid of manager cells. Each
-// cell is a quick "how's this manager doing" read: remaining budget as the
-// focal number, total spend and the Claude differential pill top-right, the
-// top-5 spend, and the quota fill. Polls /api/players directly (its own poll +
-// scale, independent of the board).
+// The room - squads: fixes two auction-night bugs (docs/DESIGN-WAIVERS.md
+// section 3F). Desktop/TV cards used to cap at 5 owned players with a
+// "+N more" row; the TV canvas could measure a zero container width and
+// commit to scale(0), blanking the whole screen. All three containers
+// (desktop grid, phone stack, TV canvas) now share one SquadCard component
+// that always renders the full squad from config-driven quotas, never a
+// hardcoded 15.
+//
+// This route serves two real audiences at the same URL: a manager's laptop
+// browser (the normal, unscaled 2-col grid, RoomNav visible) and the actual
+// projector, which loads /squads?tv=1 to get the fixed 1600x900 canvas -
+// the zero-width scale guard for that path lives in useBoardScale
+// (tv-common.tsx) and is untouched here.
 
+import { Suspense } from "react";
 import type { CSSProperties } from "react";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersManager, PlayersPayload } from "@/lib/players";
-import { ClubKit, PhoneNav, abbr, money, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
+import SquadCard, { type SquadCardPlayer } from "./SquadCard";
+import { PhoneNav, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
-const POSITIONS: Position[] = ["GK", "DEF", "MID", "FWD"];
-const POS_LETTER: Record<Position, string> = { GK: "G", DEF: "D", MID: "M", FWD: "F" };
-const TOP_N = 5;
-
-/** Verdict -> the CSS var that colours the paid-price figure in the top-5 list. */
-function priceColorVar(v: PlayerRow["verdict"]): string {
-  if (v === "STEAL") return "var(--vg)";
-  if (v === "OVERPAY") return "var(--vb)";
-  if (v === "FAIR") return "var(--vf)";
-  return "var(--ink)";
-}
-
-/** claudeDelta -> pill class (up/down/flat), same convention as the board's verdict pill. */
-function deltaPillClass(delta: number | null): string {
-  if (delta == null) return "flat";
-  if (delta > 0) return "up";
-  if (delta < 0) return "down";
-  return "flat";
-}
-function deltaLabel(delta: number | null): string {
-  if (delta == null) return "-";
-  const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
-  return `${sign}$${Math.abs(delta).toLocaleString()}`;
-}
-
-/** "2G 5D 5M 3F" quota-fill string from a manager's owned players. */
-function fillsLabel(owned: PlayerRow[]): string {
-  const counts: Record<Position, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
-  for (const p of owned) counts[p.position] += 1;
-  return POSITIONS.map((p) => `${counts[p]}${POS_LETTER[p]}`).join(" ");
-}
-
-function ManagerCell({ m, byId }: { m: PlayersManager; byId: Map<number, PlayerRow> }) {
-  // Owned players, most expensive first - the top-5 the room actually cares about.
-  const owned = m.squadPlayerIds
+/** A manager's owned players, mapped to the plain shape SquadCard takes -
+ * shared by every container so they all read the same rows. */
+function ownedRows(m: PlayersManager, byId: Map<number, PlayerRow>): SquadCardPlayer[] {
+  return m.squadPlayerIds
     .map((id) => byId.get(id))
     .filter((p): p is PlayerRow => p != null)
-    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-  const top = owned.slice(0, TOP_N);
-  const more = owned.length - top.length;
-
-  return (
-    <div className="sq" data-testid={`squads-manager-${m.slot}`}>
-      <div className="h">
-        <span className="hl">
-          <span className="nm">
-            <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
-          </span>
-          <span className="big">{money(m.remaining)}</span>
-        </span>
-        <span className="hr">
-          <span className="spend">{money(m.spent)}</span>
-          {m.claudeDelta == null ? (
-            // Values not generated yet - no pill, just a muted dash (never "pending").
-            <span className="nodelta">-</span>
-          ) : (
-            <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
-          )}
-        </span>
-      </div>
-      {top.map((p) => (
-        <Link href={`/player/${p.id}`} className="pr pr-link" key={p.id}>
-          <span className={`posmark ${p.position.toLowerCase()}`} title={p.position}>{POS_LETTER[p.position]}</span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.displayName ?? p.name ?? "?"}</span>
-          <ClubKit teamCode={p.teamCode} teamShort={p.teamShort} size={16} />
-          <span className="tn">T{p.tier ?? "?"}</span>
-          <span className="p" style={{ color: priceColorVar(p.verdict) }}>{money(p.price)}</span>
-        </Link>
-      ))}
-      <div className="more">
-        {more > 0 ? `+${more} more - ` : ""}
-        {fillsLabel(owned)}
-        {m.squadComplete ? " ✓ complete" : ""}
-      </div>
-    </div>
-  );
+    .map((p) => ({
+      id: p.id,
+      position: p.position,
+      displayName: p.displayName ?? p.name ?? "?",
+      teamCode: p.teamCode,
+      teamShort: p.teamShort,
+      tier: p.tier,
+      price: p.price,
+      verdict: p.verdict,
+    }));
 }
 
 // ---- Phone layout (plain reflowing HTML, not the scaled TV canvas) --------
-
-function PhoneManagerCard({ m, byId, squadSize }: { m: PlayersManager; byId: Map<number, PlayerRow>; squadSize: number }) {
-  const owned = m.squadPlayerIds.map((id) => byId.get(id)).filter((p): p is PlayerRow => p != null);
-  return (
-    <div className="ph-card" data-testid={`ph-squad-${m.slot}`}>
-      <div className="ph-sqhead">
-        <span className="ph-hl">
-          <span className="ph-eyeline">
-            <span className="ph-mgr">
-              <Link href={`/manager/${m.slot}`}>{abbr(m.short)}</Link>
-            </span>
-            <span className="ph-count">{owned.length}/{squadSize}</span>
-          </span>
-          <span className="ph-money-big">{money(m.remaining)}</span>
-        </span>
-        <span className="ph-hr">
-          <span className="ph-spend">spent {money(m.spent)}</span>
-          {m.claudeDelta == null ? (
-            // Values not generated yet - no pill, just a muted dash (never "pending").
-            <span className="ph-nodelta">-</span>
-          ) : (
-            <span className={`pill ${deltaPillClass(m.claudeDelta)}`}>{deltaLabel(m.claudeDelta)}</span>
-          )}
-        </span>
-      </div>
-      <div className="ph-players">
-        {owned.map((p) => (
-          <Link href={`/player/${p.id}`} className="ph-prow ph-prow-link" key={p.id}>
-            <ClubKit teamCode={p.teamCode} teamShort={p.teamShort} size={18} showLabel={false} />
-            <span className="ph-pname">{p.displayName ?? p.name ?? "?"}</span>
-            <span className="chip ph-chip">{p.position} T{p.tier ?? "?"}</span>
-            <span className="ph-price">{money(p.price)}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function PhoneSquads({ payload, connected }: { payload: PlayersPayload | null; connected: boolean }) {
   const ready = payload !== null;
   const byId = new Map<number, PlayerRow>(payload ? payload.players.map((p) => [p.id, p]) : []);
   const totalManagers = payload?.managers.length ?? 0;
   const completeManagers = payload ? payload.managers.filter((m) => m.squadComplete).length : 0;
-  const squadSize = payload ? Object.values(payload.squad).reduce((a, b) => a + b, 0) : 0;
   const managers = payload ? [...payload.managers].sort((a, b) => a.slot - b.slot) : [];
+  const squad = (payload?.squad ?? {}) as Record<Position, number>;
 
   return (
     <div className="ph-screen" data-testid="squads-page">
@@ -149,7 +61,14 @@ function PhoneSquads({ payload, connected }: { payload: PlayersPayload | null; c
       ) : (
         <div className="ph-stack">
           {managers.map((m) => (
-            <PhoneManagerCard key={m.slot} m={m} byId={byId} squadSize={squadSize} />
+            <SquadCard
+              key={m.slot}
+              variant="phone"
+              testId={`ph-squad-${m.slot}`}
+              manager={m}
+              players={ownedRows(m, byId)}
+              squad={squad}
+            />
           ))}
         </div>
       )}
@@ -158,17 +77,50 @@ function PhoneSquads({ payload, connected }: { payload: PlayersPayload | null; c
   );
 }
 
-export default function SquadsView() {
-  const { payload, connected } = usePolledPlayers();
-  const { ref, scale } = useBoardScale();
-  const isPhone = useIsPhone();
-  if (isPhone) return <PhoneSquads payload={payload} connected={connected} />;
-  const ready = payload !== null && scale > 0;
+// ---- Desktop grid (new, unscaled, normal document flow) --------------------
 
+function DesktopGridSquads({ payload, connected }: { payload: PlayersPayload | null; connected: boolean }) {
+  const ready = payload !== null;
+  const byId = new Map<number, PlayerRow>(payload ? payload.players.map((p) => [p.id, p]) : []);
+  const totalManagers = payload?.managers.length ?? 0;
+  const completeManagers = payload ? payload.managers.filter((m) => m.squadComplete).length : 0;
+  const managers = payload ? [...payload.managers].sort((a, b) => a.slot - b.slot) : [];
+  const squad = (payload?.squad ?? {}) as Record<Position, number>;
+
+  return (
+    <main className="screen squads-grid-screen" data-testid="squads-page">
+      <h1>Squads</h1>
+      <p className="statusline">
+        {ready ? `${completeManagers}/${totalManagers} squads complete` : connected ? "connecting..." : "connection lost - retrying"}
+      </p>
+      {ready && (
+        <div className="squad-grid">
+          {managers.map((m) => (
+            <SquadCard
+              key={m.slot}
+              variant="grid"
+              testId={`squads-manager-${m.slot}`}
+              manager={m}
+              players={ownedRows(m, byId)}
+              squad={squad}
+            />
+          ))}
+        </div>
+      )}
+    </main>
+  );
+}
+
+// ---- TV canvas (fixed 1600x900, scaled to its frame) -----------------------
+
+function TvSquads({ payload, connected }: { payload: PlayersPayload | null; connected: boolean }) {
+  const { ref, scale } = useBoardScale();
+  const ready = payload !== null && scale > 0;
   const byId = new Map<number, PlayerRow>(payload ? payload.players.map((p) => [p.id, p]) : []);
   const totalManagers = payload?.managers.length ?? 0;
   const completeManagers = payload ? payload.managers.filter((m) => m.squadComplete).length : 0;
   const allDone = totalManagers > 0 && completeManagers === totalManagers;
+  const squad = (payload?.squad ?? {}) as Record<Position, number>;
 
   return (
     <div data-testid="squads-page">
@@ -193,12 +145,45 @@ export default function SquadsView() {
             </div>
             <div className="sqgrid">
               {payload!.managers.map((m) => (
-                <ManagerCell key={m.slot} m={m} byId={byId} />
+                <SquadCard
+                  key={m.slot}
+                  variant="tv"
+                  testId={`squads-manager-${m.slot}`}
+                  manager={m}
+                  players={ownedRows(m, byId)}
+                  squad={squad}
+                />
               ))}
             </div>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+// `?tv=1` selects the fixed 1600x900 projector canvas; otherwise a normal
+// browser gets the unscaled 2-col grid. useSearchParams needs a Suspense
+// boundary under the App Router even inside an all-client-component tree
+// (same requirement as app/board/preview/page.tsx).
+function SquadsViewInner({ tv: tvProp }: { tv?: boolean }) {
+  const { payload, connected } = usePolledPlayers();
+  const isPhone = useIsPhone();
+  const searchParams = useSearchParams();
+  // The board's TV handoff (app/page.tsx, tvView === "squads") passes tv as a
+  // prop - the projector is on "/" with no query string there. The flag falls
+  // back to ?tv=1 for a directly-loaded projector URL.
+  const tv = tvProp ?? searchParams.get("tv") === "1";
+
+  if (isPhone) return <PhoneSquads payload={payload} connected={connected} />;
+  if (tv) return <TvSquads payload={payload} connected={connected} />;
+  return <DesktopGridSquads payload={payload} connected={connected} />;
+}
+
+export default function SquadsView({ tv }: { tv?: boolean } = {}) {
+  return (
+    <Suspense fallback={<main className="screen">loading squads...</main>}>
+      <SquadsViewInner tv={tv} />
+    </Suspense>
   );
 }

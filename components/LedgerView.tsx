@@ -1,29 +1,30 @@
 "use client";
 
-// The ledger: every player in the pool, one scrollable table. Sold rows sort
-// by paid price (the room's "who got the money" read); unsold rows follow,
-// sorted by last season's points. Sealed valuations never appear for unsold
-// rows (the API already withholds them structurally - this view just never
-// reads `value` for a row where sold is false).
+// The ledger: every player in the pool, one scrollable table. Filtering
+// (docs/DESIGN-WAIVERS.md section 3E) fixes the auction-night gap where it
+// existed only on phone: status/position/club now live in one shared filter
+// model (components/LedgerFilters.tsx), rendered as a desktop bar above the
+// table and a phone sheet - same state, different layout. Sealed valuations
+// never appear for unsold rows (the API already withholds them structurally -
+// this view just never reads `value` for a row where sold is false).
 
-import { useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Position } from "@/lib/config";
 import type { PlayerRow, PlayersPayload } from "@/lib/players";
+import {
+  applyLedgerFilters,
+  isSortActive,
+  LedgerFilterBar,
+  LedgerFilterSheet,
+  sortArrow,
+  useLedgerFilters,
+} from "./LedgerFilters";
 import { ClubKit, PL_PHOTO, PhoneNav, SILHOUETTE, abbr, money, ownerColor, photoErr, useBoardScale, useIsPhone, usePolledPlayers } from "./tv-common";
 
 /** The read-only spotlight route for a player row (#51). */
 function playerHref(id: number): string {
   return `/player/${id}`;
-}
-
-/** Sold rows first (highest paid first), then unsold rows by last season's points. */
-function ledgerSort(a: PlayerRow, b: PlayerRow): number {
-  if (a.sold !== b.sold) return a.sold ? -1 : 1;
-  if (a.sold) return (b.price ?? 0) - (a.price ?? 0);
-  return (b.pts ?? 0) - (a.pts ?? 0);
 }
 
 function verdictPillClass(v: PlayerRow["verdict"]): string {
@@ -109,48 +110,6 @@ function Row({ p }: { p: PlayerRow }) {
 
 // ---- Phone layout (plain reflowing HTML, not the scaled TV canvas) --------
 
-type PhoneSortKey = "paid" | "points" | "value" | "tier";
-type PhonePosFilter = "ALL" | Position;
-
-const PHONE_SORT_OPTIONS: { key: PhoneSortKey; label: string }[] = [
-  { key: "paid", label: "Paid" },
-  { key: "points", label: "Points" },
-  { key: "value", label: "Value" },
-  { key: "tier", label: "Tier" },
-];
-const PHONE_SORT_HEADMETA: Record<PhoneSortKey, string> = {
-  paid: "SORTED BY PAID",
-  points: "SORTED BY POINTS",
-  value: "SORTED BY VALUE",
-  tier: "SORTED BY TIER",
-};
-const PHONE_POSITION_OPTIONS: PhonePosFilter[] = ["ALL", "GK", "DEF", "MID", "FWD"];
-
-/** Paid desc / Points desc / Value desc (nulls last, sealed rows included) / Tier asc. */
-function phoneLedgerSort(rows: PlayerRow[], sortKey: PhoneSortKey): PlayerRow[] {
-  const out = [...rows];
-  switch (sortKey) {
-    case "points":
-      out.sort((a, b) => (b.pts ?? -Infinity) - (a.pts ?? -Infinity));
-      break;
-    case "value":
-      out.sort((a, b) => {
-        if (a.value == null && b.value == null) return 0;
-        if (a.value == null) return 1;
-        if (b.value == null) return -1;
-        return b.value - a.value;
-      });
-      break;
-    case "tier":
-      out.sort((a, b) => (a.tier ?? 99) - (b.tier ?? 99));
-      break;
-    case "paid":
-    default:
-      out.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-  }
-  return out;
-}
-
 function PhoneLedgerRow({ p }: { p: PlayerRow }) {
   const href = playerHref(p.id);
   if (!p.sold) {
@@ -207,67 +166,20 @@ function PhoneLedgerRow({ p }: { p: PlayerRow }) {
 }
 
 function PhoneLedger({ payload, connected }: { payload: PlayersPayload | null; connected: boolean }) {
-  const [sortKey, setSortKey] = useState<PhoneSortKey>("paid");
-  const [posFilter, setPosFilter] = useState<PhonePosFilter>("ALL");
-  const [showAll, setShowAll] = useState(false);
-
+  const filters = useLedgerFilters();
   const ready = payload !== null;
-  let rows = payload ? payload.players.filter((p) => showAll || p.sold) : [];
-  if (posFilter !== "ALL") rows = rows.filter((p) => p.position === posFilter);
-  rows = phoneLedgerSort(rows, sortKey);
+  const players = payload?.players ?? [];
+  const rows = applyLedgerFilters(players, filters.state);
 
   return (
     <div className="ph-screen" data-testid="ledger-page">
       <div className="ph-header">
         <span className="ph-eyebrow">THE LEDGER</span>
-        <span className="ph-headmeta">{PHONE_SORT_HEADMETA[sortKey]}</span>
+        <span className="ph-headmeta">
+          {filters.state.sort.key ? `SORTED BY ${filters.state.sort.key.toUpperCase()}` : ""}
+        </span>
       </div>
-      <div className="ph-ctrlwrap">
-        <div className="ph-ctrlgroup" role="group" aria-label="Sort ledger by">
-          {PHONE_SORT_OPTIONS.map((o) => (
-            <button
-              key={o.key}
-              type="button"
-              className={`ph-chipbtn${sortKey === o.key ? " active" : ""}`}
-              aria-pressed={sortKey === o.key}
-              onClick={() => setSortKey(o.key)}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-        <div className="ph-ctrlgroup" role="group" aria-label="Filter by position">
-          {PHONE_POSITION_OPTIONS.map((pos) => (
-            <button
-              key={pos}
-              type="button"
-              className={`ph-chipbtn${posFilter === pos ? " active" : ""}`}
-              aria-pressed={posFilter === pos}
-              onClick={() => setPosFilter(pos)}
-            >
-              {pos === "ALL" ? "All" : pos}
-            </button>
-          ))}
-        </div>
-        <div className="ph-ctrlgroup" role="group" aria-label="Sold or all players">
-          <button
-            type="button"
-            className={`ph-chipbtn${!showAll ? " active" : ""}`}
-            aria-pressed={!showAll}
-            onClick={() => setShowAll(false)}
-          >
-            Sold
-          </button>
-          <button
-            type="button"
-            className={`ph-chipbtn${showAll ? " active" : ""}`}
-            aria-pressed={showAll}
-            onClick={() => setShowAll(true)}
-          >
-            All
-          </button>
-        </div>
-      </div>
+      <LedgerFilterSheet players={players} filtered={rows} filters={filters} />
       {!ready ? (
         <div className="ph-loading">{connected ? "connecting..." : "connection lost - retrying"}</div>
       ) : (
@@ -282,14 +194,40 @@ function PhoneLedger({ payload, connected }: { payload: PlayersPayload | null; c
   );
 }
 
+// ---- Desktop / TV canvas (the fixed 1600x900 board, filter bar above the table)
+
+function SortableTh({
+  label,
+  sortKey,
+  filters,
+}: {
+  label: string;
+  sortKey: "price" | "value";
+  filters: ReturnType<typeof useLedgerFilters>;
+}) {
+  const active = isSortActive(filters.state, sortKey);
+  return (
+    <th
+      className={`sortable${active ? " sort-active" : ""}`}
+      onClick={() => filters.setSort(sortKey)}
+      role="button"
+      tabIndex={0}
+    >
+      {label} <span className="arrow">{sortArrow(filters.state, sortKey)}</span>
+    </th>
+  );
+}
+
 export default function LedgerView() {
   const { payload, connected } = usePolledPlayers();
   const { ref, scale } = useBoardScale();
   const isPhone = useIsPhone();
+  const filters = useLedgerFilters();
   if (isPhone) return <PhoneLedger payload={payload} connected={connected} />;
   const ready = payload !== null && scale > 0;
 
-  const rows = payload ? [...payload.players].sort(ledgerSort) : [];
+  const players = payload?.players ?? [];
+  const rows = applyLedgerFilters(players, filters.state);
 
   return (
     <div data-testid="ledger-page">
@@ -308,9 +246,12 @@ export default function LedgerView() {
             <div className="tv-top">
               <span className="kick">The ledger</span>
               <span className="spacer" />
-              <span className="meta">SORTED BY PAID</span>
+              <span className="meta">
+                {filters.state.sort.key ? `SORTED BY ${filters.state.sort.key.toUpperCase()}` : "DEFAULT ORDER"}
+              </span>
             </div>
             <div className="ledcell">
+              <LedgerFilterBar players={players} filtered={rows} filters={filters} />
               <table className="led">
                 <thead>
                   <tr>
@@ -322,8 +263,8 @@ export default function LedgerView() {
                     <th>Tier</th>
                     <th>FPL £</th>
                     <th>&apos;25 pts</th>
-                    <th>Paid</th>
-                    <th>Claude</th>
+                    <SortableTh label="Paid" sortKey="price" filters={filters} />
+                    <SortableTh label="Claude" sortKey="value" filters={filters} />
                     <th>&Delta;</th>
                   </tr>
                 </thead>
