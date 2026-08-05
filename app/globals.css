@@ -2259,4 +2259,18 @@ a.squad-row.squad-row-link:hover { background: var(--chip); }
   .aw-head { flex-wrap: wrap; }
   .aw-badges { flex-direction: row; align-items: center; }
 }
+/* Bid 1 Charts + Analysis: charts stacked one per line, then the square
+   card images (cover + 11 awards = 3 rows of 4). */
+.aw-charts-stack { display: flex; flex-direction: column; gap: 16px; }
+.aw-tilegrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.aw-tile {
+  display: block; border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow-md); background: #0b1122;
+  transition: transform 120ms ease;
+}
+.aw-tile:hover { transform: translateY(-2px); }
+.aw-tile img { width: 100%; height: auto; display: block; aspect-ratio: 1 / 1; }
+@media (max-width: 720px) {
+  .aw-tilegrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
 /* end AWARDS PAGE SECTION */

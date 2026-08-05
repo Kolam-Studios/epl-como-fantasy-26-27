@@ -12,6 +12,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import AuctionAwardsAnalysis from "./AuctionAwards";
 import type { Position } from "@/lib/config";
 import type { PlayerRow } from "@/lib/players";
 import type { RecapAward } from "@/lib/recap";
@@ -695,5 +696,9 @@ export default function PeriodArchive({ seq, sub = "budget" }: { seq: number; su
   if (sub === "trades") {
     return <TradesPane trades={snapshot.payload.trades?.trades ?? []} />;
   }
+  // Bid 1's Charts + Analysis is the Auction Night awards pack (owner call):
+  // the night in numbers, the five charts, then the award card tiles. Waiver
+  // periods keep the generic computed pane.
+  if (period.seq === 1) return <AuctionAwardsAnalysis />;
   return <ChartsPane recap={snapshot.payload.recap ?? {}} players={snapshot.payload.players?.players ?? []} />;
 }
