@@ -337,12 +337,126 @@ function RulebookBody() {
             bids recalculate instantly, and every trade is announced.
           </p>
           <p>
+            <strong>One pause:</strong> trades stop from a waiver cutoff until that round&apos;s
+            results publish, so the engine always resolves against the exact budgets and squads the
+            forms were submitted against. They reopen the moment results are out, and players won at
+            a waiver are tradeable straight away.
+          </p>
+          <p>
             <strong>The veto:</strong> any manager can call a veto vote on a trade. Counting only the
             managers who are not party to the trade, if more than half of them veto within 24 hours,
             the trade is void; anyone who does not vote in time simply abstains. For an eight-manager
             league a two-way trade needs 4 of the other 6 to veto, and a three-way trade needs 3 of the
             other 5. The veto is run by the group, not enforced by the tool, and it is how the league
             polices lopsided or repeat trade-backs.
+          </p>
+        </div>
+      </section>
+
+      <section className="rb-section">
+        <div className="rb-kick">THE SEASON</div>
+        <h2 className="rb-h2">Waiver periods</h2>
+        <div className="rb-card rb-prose">
+          <p>
+            After the auction, the season runs in periods: monthly blind-bid waiver rounds, with a
+            live rebid auction in January. Every period gets its own tab on the rail at the top of
+            the site - the current one is live, future ones are locked, and past ones are frozen
+            archives that never change.
+          </p>
+          <p>
+            Waiver forms are due on the <strong>last Saturday of the month at 5:00pm Sydney time</strong>
+            {" "}(no round in December - it rolls into the January rebid). The countdown on the
+            period&apos;s page is the authoritative clock.
+          </p>
+          <p>
+            When a round resolves, the period closes and freezes: its final budgets, squads, ledger,
+            trades and charts become a permanent archive, and the next period opens. The August
+            auction is archived the same way as the first period, &quot;Bid 1&quot;.
+          </p>
+          <p>
+            Money only ever goes down. A waiver win subtracts the winning bid from your wallet, and
+            dropping a player refunds nothing - the same no-refund rule trades follow. What you do
+            not spend now is your firepower for the January rebid.
+          </p>
+        </div>
+      </section>
+
+      <section className="rb-section">
+        <div className="rb-kick">BLIND BIDS</div>
+        <h2 className="rb-h2">The waiver form</h2>
+        <div className="rb-card rb-prose">
+          <p>
+            Each manager submits through the site using their private token - one memorable word,
+            issued by the Commissioners. The token is the only credential; if you lose it, a
+            Commissioner reissues it. The form has four steps:
+          </p>
+          <ol>
+            <li>
+              <strong>Who you are:</strong> pick your name, enter your token. Your remaining budget
+              and squad load.
+            </li>
+            <li>
+              <strong>Nominate drops:</strong> mark which of your players you are willing to lose,
+              in priority order. Drops set your win rights, position by position: nominate two
+              forwards and one midfielder and you can win at most two forwards and one midfielder.
+            </li>
+            <li>
+              <strong>Blind bids:</strong> any number of bids on free agents, whole dollars, minimum
+              $1. Each bid can go up to your full remaining wallet - bids do not reserve money, you
+              only pay for wins. A bid on a position where you nominated no drop can never win; the
+              form warns you but does not stop you.
+            </li>
+            <li>
+              <strong>Review and submit.</strong> Resubmit as many times as you like - the latest
+              form before the cutoff is the one that counts, and your token history page keeps every
+              version.
+            </li>
+          </ol>
+          <p>
+            <strong>Everything is sealed.</strong> Nobody - including the Commissioners - can see
+            anyone&apos;s bids or drops until the round resolves. Your nominated drops stay invisible
+            to the room even after you submit; they only surface in the results, and only the ones
+            that actually executed.
+          </p>
+        </div>
+      </section>
+
+      <section className="rb-section">
+        <div className="rb-kick">RESOLUTION</div>
+        <h2 className="rb-h2">How waiver winners are decided</h2>
+        <div className="rb-card rb-prose">
+          <p>
+            At the cutoff, the engine collects every manager&apos;s final form and walks all bids
+            once, highest dollar first:
+          </p>
+          <ol>
+            <li>
+              A bid <strong>wins</strong> if the player is still unclaimed this round, you still have
+              the money, and you still hold an unused drop slot for that position. Winning pays your
+              bid, consumes that slot, and releases your highest-priority nominated drop in that
+              position.
+            </li>
+            <li>
+              <strong>Equal bids on the same player:</strong> the smaller purse wins - the bid that
+              is the larger share of its manager&apos;s remaining budget. The $60 that is most of
+              your wallet beats the $60 that is pocket change.
+            </li>
+            <li>
+              <strong>Skipped bids cost nothing and block nothing.</strong> If the top bid on a
+              player cannot win (no slot, no funds), the next-highest bid on that player is
+              considered normally. Early wins can also price you out of your own later bids - those
+              simply skip, unspent.
+            </li>
+            <li>
+              <strong>Drops only happen against wins.</strong> Nominated players whose slots were
+              never used stay on your squad, untouched. No form at all simply sits the round out.
+            </li>
+          </ol>
+          <p>
+            The full outcome log - every bid, in order, with why it won or skipped - is published
+            with the results, along with the random seed used for any dead-equal ties, so the whole
+            walk can be replayed and checked. Squads stay at 15 throughout: every win is a
+            one-for-one, same-position swap.
           </p>
         </div>
       </section>
@@ -395,71 +509,44 @@ function RulebookBody() {
         </h2>
         <div className="rb-card rb-prose">
           <p>
-            This section describes a proposed multi-stage model for the whole season - it is not yet
-            fully ratified, and nothing here affects the Aug 2 auction. Full detail lives in{" "}
+            The waiver rules above are ratified and live; this section covers only the part of the
+            season economy that is still to be settled - the January rebid. Background lives in{" "}
             <code>docs/SEASON-ECONOMY.md</code>.
           </p>
           <p>
-            The wallet model: each manager has one wallet for the entire season. Money left unspent at
-            any stage rolls forward, and cash injections top the wallet up at fixed points.
+            The wallet model: each manager has one wallet for the entire season. Money left unspent
+            rolls forward - banking money in August to arrive rich at the rebid is an intended,
+            rewarded strategy. Waiver spending draws on that same wallet, so every waiver win
+            directly reduces rebid firepower.
           </p>
           <div className="rb-diagram">
             <SeasonTimelineDiagram />
             <div className="rb-diagram-caption">
-              Four spending moments on one wallet, Aug through May.
+              One wallet across the whole season, Aug through May.
             </div>
           </div>
-          <p>Four spending moments:</p>
-          <ol>
-            <li><strong>Auction one (Aug 2):</strong> start with $3,000, spend it at the auction.</li>
-            <li>
-              <strong>Waiver window one (Aug - Jan):</strong> a $500 injection (settled) to buy waivers
-              across the whole first half of the season - $500 total for the period, not per month.
-            </li>
-            <li>
-              <strong>Auction two, the rebid (early February, after the real transfer window closes):
-              </strong> a $2,000 injection (settled). Each manager may retain any player they own at
-              the price they paid in August; every player not retained returns to the pool, and the
-              two-phase auction reruns over the released pool. There is no retention cap - a manager
-              can retain as many players as their February pot affords. The February pot is
-              deliberately smaller than August&apos;s: it rewards bargains and banked money, and taxes
-              heavy August spending on a single star.
-            </li>
-            <li>
-              <strong>Waiver window two (Feb - May):</strong> another injection (working figure $500,
-              to be confirmed) to buy waivers.
-            </li>
-          </ol>
           <p>
-            Waivers run as monthly sealed blind-bid windows. Bids are due on the last day of the month,
-            the first window landing at the end of September. Each manager submits their sealed bids
-            through their own token link (a private per-manager login, no password); the highest bid on
-            each player wins. There is no cap on how many players you bid on, and you win every bid you
-            win - so you bid only where you truly want the player. You may drop a player you win back to
-            the pool, but you cannot re-bid within that same window. The results go out, managers accept
-            or reject their wins and drop squad players to make room, and the shared board updates.
-            Waiver spending draws on the same wallet, so it directly reduces February firepower.
-          </p>
-          <p>
-            No carry-over cap: banking money in August to arrive rich in February is an intended,
-            rewarded strategy.
+            <strong>The rebid (January, date to be confirmed):</strong> the working proposal is a
+            cash injection and a retention rule - each manager may keep any player they own at the
+            price they paid, everyone else returns to the pool, and the two-phase auction reruns
+            over the released players. Injection amounts, the retention mechanics and the exact date
+            are the open decisions.
           </p>
           <div className="rb-provisional-note">
             Still open - not yet decided:
             <ul>
-              <li>whether a dropped player goes to the second-highest bidder or back to the pool</li>
-              <li>the monthly rollover rule when a window has no bids in it</li>
-              <li>the waiver window&apos;s tie-break rule</li>
-              <li>the exact February rebid date</li>
-              <li>whether the 2 GK / 5 DEF / 5 MID / 3 FWD roster shape holds through waivers</li>
+              <li>the January rebid date (the owners&apos; poll is pending)</li>
+              <li>rebid cash injections and amounts</li>
+              <li>the retention rule&apos;s final shape</li>
             </ul>
           </div>
         </div>
       </section>
 
       <div className="rb-footer">
-        This page mirrors docs/PRD.md, league.config.json, docs/DATA-MODEL.md, and
-        docs/SEASON-ECONOMY.md - those documents are the source of truth if anything here is unclear.
+        This page mirrors docs/PRD.md, league.config.json, docs/DATA-MODEL.md, docs/DESIGN-WAIVERS.md
+        (the waiver-era spec of record), and docs/SEASON-ECONOMY.md - those documents are the source
+        of truth if anything here is unclear.
       </div>
     </>
   );
