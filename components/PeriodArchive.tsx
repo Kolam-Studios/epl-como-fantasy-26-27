@@ -257,15 +257,6 @@ function BudgetPane({
       ) : (
         <FinalBudgets managers={managers} label={period.label} />
       )}
-      {period.seq === 1 && (
-        <section className="rb-section">
-          <div className="rb-card rb-prose">
-            <p style={{ margin: 0 }}>
-              &#127942; The night has its honours: <Link href="/awards">the Auction Night 2026 awards</Link>.
-            </p>
-          </div>
-        </section>
-      )}
       <p className="rb-subtitle">Frozen {frozenAt}. Nothing on this page recomputes.</p>
     </div>
   );
