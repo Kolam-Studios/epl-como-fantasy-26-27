@@ -2207,3 +2207,56 @@ a.squad-row.squad-row-link:hover { background: var(--chip); }
 .hist-note-tag { display: block; color: var(--bronze); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; margin-bottom: 4px; }
 
 /* end HISTORY PAGE SECTION */
+
+/* =====================================================================
+   AWARDS PAGE SECTION: Auction Night 2026 awards (/awards). The award
+   cards deliberately use the awards pack's dark navy/gold theme (bg
+   #0b1122, gold #e8c15a, cream #f2ead8) so the page matches the
+   pre-rendered card and chart images beside it.
+   ===================================================================== */
+.aw-stack { display: flex; flex-direction: column; gap: 14px; }
+.aw-card {
+  background: #0b1122;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 20px 24px;
+}
+.aw-head { display: flex; align-items: flex-start; gap: 14px; }
+.aw-emoji { font-size: 30px; line-height: 1.2; }
+.aw-titleblock { flex: 1; min-width: 0; }
+.aw-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: 0.2px;
+  color: #e8c15a; margin: 0;
+}
+.aw-recipient { margin-top: 3px; font-size: 14px; font-weight: 600; color: #f2ead8; }
+.aw-recipient-link { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(232, 193, 90, 0.55); }
+.aw-recipient-link:hover { color: #e8c15a; }
+.aw-vs { color: rgba(242, 234, 216, 0.55); font-weight: 500; }
+.aw-badges { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.aw-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: var(--pill);
+  background: rgba(242, 234, 216, 0.12); color: #f2ead8;
+}
+.aw-badge.analytical { background: rgba(232, 193, 90, 0.16); color: #e8c15a; }
+.aw-badge.joke { background: transparent; border: 1px solid rgba(242, 234, 216, 0.3); color: rgba(242, 234, 216, 0.7); }
+.aw-blurb {
+  margin: 12px 0 0; font-size: 15px; line-height: 1.55;
+  color: #f2ead8; overflow-wrap: break-word;
+}
+.aw-tablewrap { overflow-x: auto; }
+.aw-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.aw-chart {
+  margin: 0; background: #0b1122; border-radius: var(--radius);
+  box-shadow: var(--shadow-md); padding: 12px;
+}
+.aw-chart img { width: 100%; height: auto; display: block; border-radius: 6px; }
+.aw-chart figcaption { margin-top: 8px; font-size: 12.5px; color: #f2ead8; }
+.aw-chart figcaption b { color: #e8c15a; font-weight: 700; }
+@media (max-width: 720px) {
+  .aw-charts { grid-template-columns: 1fr; }
+  .aw-head { flex-wrap: wrap; }
+  .aw-badges { flex-direction: row; align-items: center; }
+}
+/* end AWARDS PAGE SECTION */

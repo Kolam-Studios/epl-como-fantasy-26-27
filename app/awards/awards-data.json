@@ -1,0 +1,164 @@
+{
+  "$schema_note": "Auction Night 2026 awards payload. All stats verified against AUCTION-NIGHT-2026-08-02-sales.csv and -managers.csv. Copy in 'blurb' is final — do not rewrite.",
+  "event": {
+    "id": "auction-night-2026",
+    "name": "Auction Night 2026 — The Morning-After Awards",
+    "date": "2026-08-02",
+    "durationMinutes": 219,
+    "lotsCalled": 162,
+    "lotsSold": 105,
+    "lotsPassed": 57,
+    "budgetPerManager": 3000,
+    "squadSize": 15,
+    "squadShape": { "GK": 2, "DEF": 5, "MID": 5, "FWD": 3 },
+    "totalSpent": 15193,
+    "phase1": { "sales": 58, "spend": 13025 },
+    "phase2": { "sales": 47, "spend": 2168 },
+    "valueModelNote": "Sealed 'Claude value' is a tongue-in-cheek retention model; most fringe players valued ~$1. STEAL/OVERPAY verdicts are for fun."
+  },
+  "managers": [
+    { "name": "Darryl",   "spent": 2532, "remaining": 468,  "steals": 11, "overpays": 1, "priciestBuy": "B.Fernandes", "priciestPrice": 900,  "modelEdge": 1678, "squadPts": 1998, "dollarsPerPoint": 1.27 },
+    { "name": "Lakshman", "spent": 2626, "remaining": 374,  "steals": 11, "overpays": 1, "priciestBuy": "Haaland",     "priciestPrice": 1350, "modelEdge": 1418, "squadPts": 1617, "dollarsPerPoint": 1.62 },
+    { "name": "Trent",    "spent": 2900, "remaining": 100,  "steals": 7,  "overpays": 6, "priciestBuy": "Saka",        "priciestPrice": 700,  "modelEdge": 95,   "squadPts": 1870, "dollarsPerPoint": 1.55 },
+    { "name": "Varun",    "spent": 2822, "remaining": 178,  "steals": 6,  "overpays": 4, "priciestBuy": "Isak",        "priciestPrice": 500,  "modelEdge": 436,  "squadPts": 1694, "dollarsPerPoint": 1.67 },
+    { "name": "Milo",     "spent": 2055, "remaining": 945,  "steals": 11, "overpays": 2, "priciestBuy": "Gabriel",     "priciestPrice": 510,  "modelEdge": 1296, "squadPts": 2012, "dollarsPerPoint": 1.02 },
+    { "name": "Raymond",  "spent": 1648, "remaining": 1352, "steals": 7,  "overpays": 4, "priciestBuy": "Szoboszlai",  "priciestPrice": 420,  "modelEdge": 600,  "squadPts": 1656, "dollarsPerPoint": 1.00 },
+    { "name": "Robbie",   "spent": 610,  "remaining": 2390, "steals": 8,  "overpays": 2, "priciestBuy": "Mukiele",     "priciestPrice": 300,  "modelEdge": 975,  "squadPts": 1428, "dollarsPerPoint": 0.43 }
+  ],
+  "awards": [
+    {
+      "id": "all-gas-no-brakes",
+      "emoji": "💳",
+      "icon": "speedometer",
+      "title": "All Gas, No Brakes",
+      "recipients": ["Trent"],
+      "category": "fun",
+      "blurb": "Spent $2,900 of $3,000. League-high 6 overpays, including $160 for J.Timber — sealed value: $1. Whole-squad model edge: +$95. That's a tip, not a portfolio.",
+      "stats": { "spent": 2900, "budget": 3000, "remaining": 100, "overpays": 6, "worstBuy": { "player": "J.Timber", "price": 160, "sealedValue": 1 }, "squadModelEdge": 95 },
+      "cardImage": "card-01-all-gas-no-brakes.png"
+    },
+    {
+      "id": "sleeper-agent",
+      "emoji": "😴",
+      "icon": "zzz",
+      "title": "The Sleeper Agent",
+      "recipients": ["Robbie"],
+      "category": "fun",
+      "blurb": "Sat through all 58 phase-one sales — 2 hours 14 minutes — without a single bid. First purchase: 2h 40m into the night. Some people meditate. Robbie auctions.",
+      "stats": { "phaseOnePurchases": 0, "salesWatched": 58, "phaseOneDurationMin": 134, "firstPurchaseElapsedMin": 160, "firstPurchase": { "player": "Donnarumma", "price": 150 } },
+      "cardImage": "card-02-sleeper-agent.png"
+    },
+    {
+      "id": "overpay-of-the-night",
+      "emoji": "🔥",
+      "icon": "price-tag",
+      "title": "Overpay of the Night",
+      "recipients": ["Varun"],
+      "category": "fun",
+      "tongueInCheek": true,
+      "blurb": "Šeško for $410. Sealed value: $8. The model priced him like a phone case. Varun priced him like the phone.",
+      "stats": { "player": "Šeško", "price": 410, "sealedValue": 8, "delta": -402 },
+      "cardImage": "card-03-overpay-of-the-night.png"
+    },
+    {
+      "id": "420-blaze-it",
+      "emoji": "🌿",
+      "icon": "420",
+      "title": "420 Blaze It",
+      "recipients": ["Raymond"],
+      "category": "fun",
+      "blurb": "Hard ceiling: $420, not a dollar more (Szoboszlai, obviously). Left with $1,352 unspent and still lifted Gyökeres at $180 (valued $432) and Bruno G. at $70 (valued $324).",
+      "stats": { "maxBid": 420, "maxBidPlayer": "Szoboszlai", "remaining": 1352, "steals": [ { "player": "Gyökeres", "price": 180, "sealedValue": 432 }, { "player": "Bruno G.", "price": 70, "sealedValue": 324 } ] },
+      "cardImage": "card-04-420-blaze-it.png"
+    },
+    {
+      "id": "index-fund",
+      "emoji": "📈",
+      "icon": "flatline",
+      "title": "The Index Fund",
+      "recipients": ["Raymond"],
+      "category": "analytical",
+      "blurb": "1,656 last-season points bought for $1,648 — exactly $1.00 per point. He didn't beat the market. He IS the market.",
+      "stats": { "squadPts": 1656, "spent": 1648, "dollarsPerPoint": 1.0 },
+      "cardImage": "card-05-index-fund.png"
+    },
+    {
+      "id": "costco-membership",
+      "emoji": "🏷️",
+      "icon": "barcode",
+      "title": "The Costco Membership",
+      "recipients": ["Robbie"],
+      "category": "analytical",
+      "blurb": "43 cents per last-season point: 1,428 points for $610. His squad finished within 189 points of Lakshman's $2,626 one. Bulk pricing is real.",
+      "stats": { "dollarsPerPoint": 0.43, "squadPts": 1428, "spent": 610, "ptsGapToLakshman": 189, "lakshmanSpent": 2626 },
+      "cardImage": "card-06-costco-membership.png"
+    },
+    {
+      "id": "gini-coefficient",
+      "emoji": "🧮",
+      "icon": "lorenz-curve",
+      "title": "The Gini Coefficient Trophy",
+      "recipients": ["Lakshman"],
+      "category": "analytical",
+      "blurb": "Squad inequality: 0.81 — where 0 is communism and 1 is one Norwegian owning everything. Median player price: $5. A failed state with a great striker.",
+      "stats": { "gini": 0.81, "medianPrice": 5, "topBuy": { "player": "Haaland", "price": 1350 }, "topBuyShareOfSpend": 0.514, "topBuyShareOfBudget": 0.45 },
+      "cardImage": "card-07-gini-coefficient.png"
+    },
+    {
+      "id": "department-of-defence",
+      "emoji": "🛡️",
+      "icon": "shield",
+      "title": "Department of Defence",
+      "recipients": ["Milo", "Lakshman"],
+      "recipientLabel": "Milo vs Lakshman",
+      "category": "analytical",
+      "blurb": "Milo invested $1,175 in defenders — 57% of his spend. Lakshman spent $5: five defenders at $1 each. Gameweek 6 will name the winner.",
+      "stats": { "miloDefSpend": 1175, "miloDefShare": 0.572, "lakshmanDefSpend": 5, "lakshmanDefShare": 0.002 },
+      "cardImage": "card-08-department-of-defence.png"
+    },
+    {
+      "id": "exchange-rate",
+      "emoji": "💱",
+      "icon": "exchange-arrows",
+      "title": "The Exchange Rate",
+      "recipients": ["Trent"],
+      "category": "analytical",
+      "blurb": "Paid $30.10 per FPL-sticker-million, the league's worst rate. Robbie bought the same currency at $6.90. One of you got the tourist menu.",
+      "stats": { "trentPerFplMillion": 30.1, "robbiePerFplMillion": 6.9 },
+      "cardImage": "card-09-exchange-rate.png"
+    },
+    {
+      "id": "buy-high-sell-never",
+      "emoji": "📉",
+      "icon": "crash-line",
+      "title": "Buy High, Sell Never",
+      "recipients": ["Lakshman"],
+      "category": "analytical",
+      "blurb": "Average lot price: $718 in the first half hour, $1.00 at the close. Lakshman's cash moved at average minute 36 — the exact top of the market. Robbie's at minute 174, short-selling the room.",
+      "stats": { "avgLotPriceByHalfHour": [718, 291, 244, 68, 111, 110, 28, 1], "lakshmanDollarWeightedMinute": 36, "robbieDollarWeightedMinute": 174 },
+      "cardImage": "card-10-buy-high-sell-never.png"
+    },
+    {
+      "id": "ten-minute-heater",
+      "emoji": "🚨",
+      "icon": "stopwatch",
+      "title": "The Ten-Minute Heater",
+      "recipients": ["Varun"],
+      "category": "analytical",
+      "blurb": "$980 in one ten-minute window — Gibbs-White $490 and Thiago $490, back to back around minute 65. The room could only watch.",
+      "stats": { "windowSpend": 980, "windowMinutes": 10, "aroundMinute": 65, "buys": [ { "player": "Gibbs-White", "price": 490 }, { "player": "Thiago", "price": 490 } ] },
+      "cardImage": "card-11-ten-minute-heater.png"
+    }
+  ],
+  "assets": {
+    "folder": "Auction Night Awards",
+    "coverImage": "card-00-cover.png",
+    "charts": [
+      { "file": "chart-1-spend-race.png", "title": "The Spend Race", "description": "Cumulative spend per manager, minute by minute, with intermission band" },
+      { "file": "chart-2-price-vs-value.png", "title": "Every Purchase vs the Sealed Values", "description": "Price paid vs sealed Claude value scatter; steal/fair/overpay colored" },
+      { "file": "chart-3-market-crash.png", "title": "Buy High, Sell Never", "description": "Average lot price per 30-minute window, $718 to $1.00" },
+      { "file": "chart-4-department-of-defence.png", "title": "Department of Defence", "description": "Spend split by position per manager, defender dollars highlighted" },
+      { "file": "chart-5-unit-economics.png", "title": "Unit Economics", "description": "Dollars paid per 2025-26 FPL point, per manager" }
+    ]
+  }
+}

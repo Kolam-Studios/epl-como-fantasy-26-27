@@ -223,7 +223,8 @@ function CurrentSeasonCard({
         <div className="hist-season-body">
           <ChampionLine entry={entry} />
           <p className="hist-archive-link-line">
-            The August auction is archived: <Link href="/phase/1">view the Bid 1 archive</Link>.
+            The August auction is archived: <Link href="/phase/1">view the Bid 1 archive</Link> or{" "}
+            <Link href="/awards">the Auction Night awards</Link>.
           </p>
           <ManagerTable entry={entry} />
           <StatTiles entry={entry} />
