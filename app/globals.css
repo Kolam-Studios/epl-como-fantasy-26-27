@@ -1781,10 +1781,12 @@ a.ph-prow.ph-prow-link { color: inherit; text-decoration: none; }
 }
 .count-row .clab { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-/* Disabled waiver-form entry button on the live phase's landing tab (the
-   waiver form itself is a later stage's build). */
+/* The waiver-form entry link on the live phase's landing tab. Rendered as an
+   anchor (next/link), so it must be inline-block for the margin/padding box
+   to hold and must not inherit the underline. */
 .phase-formcta {
-  margin-top: 14px;
+  display: inline-block;
+  margin-top: 16px;
   font-family: var(--font-body), system-ui, sans-serif;
   font-weight: 600;
   font-size: 14px;
@@ -1794,8 +1796,11 @@ a.ph-prow.ph-prow-link { color: inherit; text-decoration: none; }
   border-radius: var(--pill);
   box-shadow: var(--shadow-md);
   padding: 10px 22px;
-  cursor: not-allowed;
-  opacity: 0.5;
+  text-decoration: none;
+  cursor: pointer;
+}
+.phase-formcta:hover {
+  filter: brightness(1.12);
 }
 
 @media (max-width: 640px) {
