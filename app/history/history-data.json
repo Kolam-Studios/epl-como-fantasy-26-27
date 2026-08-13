@@ -1,10 +1,10 @@
 [
   {
     "season": "2026-27",
-    "managers": 7,
+    "managers": 8,
     "budget": 3000,
     "squadSize": 15,
-    "recordNote": "complete, 105 buys, auction 2026-08-02; season not yet played",
+    "recordNote": "complete, 120 buys; auction 2026-08-02 plus a late 15-player roster purchase (league ruling, 2026-08-13); season not yet played",
     "source": "epl-como-fantasy-26-27 app export",
     "champion": null,
     "runnerUp": null,
@@ -60,6 +60,13 @@
         "spend": 2822,
         "squadPoints": null,
         "bestXiPoints": null
+      },
+      {
+        "manager": "Saravanan",
+        "players": 15,
+        "spend": 1500,
+        "squadPoints": null,
+        "bestXiPoints": null
       }
     ],
     "topBuy": {
@@ -68,8 +75,8 @@
       "price": 1350
     },
     "bestValueBuy": null,
-    "totalSpend": 15193,
-    "buyCount": 105
+    "totalSpend": 16693,
+    "buyCount": 120
   },
   {
     "season": "2025-26",
