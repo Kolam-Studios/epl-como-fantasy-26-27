@@ -397,8 +397,10 @@ function RulebookBody() {
             </li>
             <li>
               <strong>Nominate drops:</strong> mark which of your players you are willing to lose,
-              in priority order. Drops set your win rights, position by position: nominate two
-              forwards and one midfielder and you can win at most two forwards and one midfielder.
+              in priority order. Nominating is not releasing - nobody leaves your squad unless you
+              actually win a replacement. Drops set your win rights, position by position: nominate
+              two forwards and one midfielder and you can win at most two forwards and one
+              midfielder.
             </li>
             <li>
               <strong>Blind bids:</strong> any number of bids on free agents, whole dollars, minimum
@@ -412,6 +414,14 @@ function RulebookBody() {
               version.
             </li>
           </ol>
+          <p>
+            <strong>Who you can bid on.</strong> Any free agent: every Premier League player in the
+            pool that nobody currently owns. That is not just players who went through the auction -
+            it is everyone never bought on the night, plus anyone dropped in an earlier waiver round.
+            Players dropped in the round being resolved do not become biddable until the next period.
+            The form&apos;s search only offers valid targets, so you cannot accidentally bid on an
+            owned player.
+          </p>
           <p>
             <strong>Everything is sealed.</strong> Nobody - including the Commissioners - can see
             anyone&apos;s bids or drops until the round resolves. Your nominated drops stay invisible
@@ -427,7 +437,9 @@ function RulebookBody() {
         <div className="rb-card rb-prose">
           <p>
             At the cutoff, the engine collects every manager&apos;s final form and walks all bids
-            once, highest dollar first:
+            once, highest dollar first. <strong>There is no waiver priority ladder</strong> - no
+            running order that rewards whoever claimed least recently. Money and your own drop
+            nominations decide everything.
           </p>
           <ol>
             <li>
