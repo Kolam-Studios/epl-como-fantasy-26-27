@@ -375,8 +375,37 @@ function RulebookBody() {
           </p>
           <p>
             Money only ever goes down. A waiver win subtracts the winning bid from your wallet, and
-            dropping a player refunds nothing - the same no-refund rule trades follow. What you do
-            not spend now is your firepower for the January rebid.
+            nothing you ever pay comes back (see No refunds, below). What you do not spend now is
+            your firepower for the January rebid.
+          </p>
+        </div>
+      </section>
+
+      <section className="rb-section">
+        <div className="rb-kick">NO REFUNDS</div>
+        <h2 className="rb-h2">What you pay is gone</h2>
+        <div className="rb-card rb-prose">
+          <p>
+            <strong>There are no refunds on a player, ever, under any circumstance.</strong> The
+            money you pay at a hammer or win at a waiver leaves your wallet permanently. It does
+            not come back if:
+          </p>
+          <ul>
+            <li>you drop him at a waiver, or trade him away;</li>
+            <li>he leaves the Premier League entirely, transferred abroad or otherwise;</li>
+            <li>he suffers a season-ending or career-ending injury;</li>
+            <li>he retires, loses his place, or simply never plays again.</li>
+          </ul>
+          <p>
+            The list is illustrative, not exhaustive. The rule is the simple one: once the money
+            is spent it is spent, whatever later happens to the player. Your remaining budget only
+            ever falls.
+          </p>
+          <p>
+            <strong>Price that in when you bid.</strong> A big bid on an injury-prone player, or on
+            one the rumour mill has leaving in January, is a real risk to your money and not just
+            to your points. Nobody is made whole afterwards: there is no insurance, no hardship
+            fund and no Commissioner discretion to appeal to.
           </p>
         </div>
       </section>
