@@ -531,6 +531,12 @@ function RulebookBody() {
             rewarded strategy. Waiver spending draws on that same wallet, so every waiver win
             directly reduces rebid firepower.
           </p>
+          <p>
+            <strong>The waiver injection is in your wallet already.</strong> Every manager has been
+            credited the $500 for waiver window one, so the number the form shows you is your August
+            leftover plus $500. It is $500 for the <em>whole</em> window - Waivers 1, 2 and 3 share
+            it, it is not $500 a month - and whatever you do not spend rolls on to the rebid.
+          </p>
           <div className="rb-diagram">
             <SeasonTimelineDiagram />
             <div className="rb-diagram-caption">

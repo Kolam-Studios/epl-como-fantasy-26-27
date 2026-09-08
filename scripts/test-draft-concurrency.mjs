@@ -14,7 +14,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig, minOpenBid, squadSize } from "../lib/config-core.mjs";
+import { buildConfig, minOpenBid, squadSize, walletBudget } from "../lib/config-core.mjs";
 import { recordSale } from "../lib/draft-core.mjs";
 
 const url = process.env.DATABASE_URL;
@@ -184,7 +184,7 @@ try {
   // double-spend race is therefore two sales of the SAME lot, which is
   // exactly this scenario's shape; the serialising lock plus the post-lock
   // maxBid re-derivation make the second one lose.
-  const maxBid = cfg.budget - reserve * (squadSize(cfg) - 1);
+  const maxBid = walletBudget(cfg) - reserve * (squadSize(cfg) - 1);
   await sql`update app_state set current_player_id = ${P_TIGHT} where id = 1`;
   const versionBeforeB = await currentVersion();
   const settledB = await Promise.allSettled([
@@ -201,8 +201,8 @@ try {
   `;
   report(
     "(b) manager spend stays legal (spend <= budget)",
-    spend === maxBid && spend <= cfg.budget,
-    `spend $${spend}, budget $${cfg.budget}`,
+    spend === maxBid && spend <= walletBudget(cfg),
+    `spend $${spend}, budget $${walletBudget(cfg)}`,
   );
   const versionAfterB = await currentVersion();
   report(
@@ -229,8 +229,8 @@ try {
   `;
   report(
     "no fixture manager over budget or over squad quota",
-    managerChecks.every((m) => m.spend <= cfg.budget && m.owned <= squadSize(cfg)),
-    managerChecks.filter((m) => m.spend > cfg.budget || m.owned > squadSize(cfg)).map((m) => m.short).join(", "),
+    managerChecks.every((m) => m.spend <= walletBudget(cfg) && m.owned <= squadSize(cfg)),
+    managerChecks.filter((m) => m.spend > walletBudget(cfg) || m.owned > squadSize(cfg)).map((m) => m.short).join(", "),
   );
 } catch (err) {
   console.error("test-draft-concurrency failed to run:", err);

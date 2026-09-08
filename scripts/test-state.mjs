@@ -13,7 +13,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig, minOpenBid, squadSize } from "../lib/config-core.mjs";
+import { buildConfig, minOpenBid, squadSize, walletBudget } from "../lib/config-core.mjs";
 import { buildStatePayload } from "../lib/state-core.mjs";
 
 const url = process.env.DATABASE_URL;
@@ -132,7 +132,7 @@ try {
   // Expected manager-1 numbers from ALL their sales (pre-existing + fixture).
   const managerSales = await sql`select price from sales where manager_id = ${manager.id}`;
   const expectedSpent = managerSales.reduce((s, r) => s + r.price, 0);
-  const expectedRemaining = cfg.budget - expectedSpent;
+  const expectedRemaining = walletBudget(cfg) - expectedSpent;
   const expectedOpen = squadSize(cfg) - managerSales.length;
   const expectedMaxBid =
     expectedOpen <= 0 ? null : expectedRemaining - minOpenBid(cfg) * (expectedOpen - 1);

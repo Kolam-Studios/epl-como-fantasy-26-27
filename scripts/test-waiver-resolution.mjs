@@ -9,7 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
-import { buildConfig } from "../lib/config-core.mjs";
+import { buildConfig, walletBudget } from "../lib/config-core.mjs";
 import { backfillBidOne, getSnapshot, listPeriods } from "../lib/period-core.mjs";
 import { setManagerToken, submitWaiverForm } from "../lib/waiver-core.mjs";
 import { resolveWaiverPeriod } from "../lib/waiver-engine-core.mjs";
@@ -56,14 +56,27 @@ try {
   const [DFa, DF1] = take("DEF", 2);
   const [GKa, GK1] = take("GK", 2);
 
-  // Owned squads priced so start-of-round remaining matches the example:
-  // A $120, B $95, C $260, D $40 (budget 3000 each).
-  const fixtures = [
-    [FWa, mA, 1000], [FWb, mA, 1000], [MFa, mA, 880],           // A: 2880 spent
-    [FWc, mB, 2905],                                            // B: 2905
-    [MFb, mC, 1370], [DFa, mC, 1370],                           // C: 2740
-    [FWd, mD, 1480], [GKa, mD, 1480],                           // D: 2960
+  // Owned squads priced so START-OF-ROUND REMAINING matches the example
+  // exactly: A $120, B $95, C $260, D $40. The spec fixes the remainders,
+  // not the spend, so each squad absorbs (season wallet - target) and the
+  // example survives any post-auction top-up. The first player in a squad
+  // takes the remainder so the totals are exact.
+  const WALLET = walletBudget(cfg);
+  const squadTargets = [
+    { manager: mA, players: [FWa, FWb, MFa], remaining: 120 },
+    { manager: mB, players: [FWc], remaining: 95 },
+    { manager: mC, players: [MFb, DFa], remaining: 260 },
+    { manager: mD, players: [FWd, GKa], remaining: 40 },
   ];
+  const fixtures = [];
+  const auctionSpendOf = new Map();
+  for (const { manager, players: pids, remaining } of squadTargets) {
+    const total = WALLET - remaining;
+    const base = Math.floor(total / pids.length);
+    const prices = [total - base * (pids.length - 1), ...Array(pids.length - 1).fill(base)];
+    pids.forEach((pid, i) => fixtures.push([pid, manager, prices[i]]));
+    auctionSpendOf.set(manager.id, total);
+  }
   for (const [pid, m, price] of fixtures) {
     await sql`insert into sales (player_id, manager_id, price) values (${pid}, ${m.id}, ${price})`;
   }
@@ -255,10 +268,11 @@ try {
     fwaSales[1].manager_id === mB.id && fwaSales[1].price === 10);
   const stateAfter = await buildStatePayload(sql, cfg);
   const bAfter = stateAfter.managers.find((m) => m.id === mB.id);
-  // B: 2905 auction + 60 W1 win + 10 W2 win + 10 cash drained out - 1 cash
-  // received = 2984. Nothing refunded for FW-c or FW1 leaving.
+  // B: its auction total + 60 (W1 win) + 10 (W2 win) + 10 cash drained out
+  // - 1 cash received. Nothing is refunded for FW-c or FW1 leaving.
+  const bExpectedSpend = auctionSpendOf.get(mB.id) + 60 + 10 + 10 - 1;
   report("B's spend stays sunk across the whole history",
-    bAfter.spent === 2984, `spent ${bAfter.spent}`);
+    bAfter.spent === bExpectedSpend, `spent ${bAfter.spent}, expected ${bExpectedSpend}`);
   report("B owns FW-a, dropped FW1",
     bAfter.squad.some((p) => p.playerId === FWa) && !bAfter.squad.some((p) => p.playerId === FW1));
 

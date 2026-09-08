@@ -16,6 +16,7 @@ import {
   selectLocalOverride,
   squadSize,
   tierFor,
+  walletBudget,
 } from "../lib/config-core.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -88,12 +89,52 @@ check("absent local: config equals the base file", () => {
   assertEqual(squadSize(cfg), 15, "squad size");
 });
 
+// (b2) budgetTopUp: the post-auction wallet grant rides on top of `budget`,
+// which itself never moves (the auction record depends on it).
+check("walletBudget: budget + budgetTopUp", () => {
+  const cfg = buildConfig(base(), { budget: 3000, budgetTopUp: 500 });
+  assertEqual(cfg.budget, 3000, "budget untouched by the top-up");
+  assertEqual(walletBudget(cfg), 3500, "wallet");
+});
+
+check("walletBudget: absent or zero top-up is just the budget", () => {
+  const noKey = base();
+  delete noKey.budgetTopUp;
+  assertEqual(walletBudget(buildConfig(noKey)), noKey.budget, "wallet with no budgetTopUp key");
+  assertEqual(walletBudget(buildConfig(base(), { budgetTopUp: 0 })), base().budget, "wallet with a 0 top-up");
+});
+
+check("walletBudget: top-ups accumulate through a local override", () => {
+  // A later grant raises the running total; it does not stack a second key.
+  const cfg = buildConfig(base(), { budgetTopUp: 800 });
+  assertEqual(walletBudget(cfg), cfg.budget + 800, "wallet after a raised top-up");
+});
+
+check("the shipped config carries the waiver-era top-up", () => {
+  const cfg = buildConfig(base());
+  assertEqual(cfg.budget, 3000, "auction budget");
+  assertEqual(walletBudget(cfg), 3500, "season wallet");
+});
+
 // (c) malformed configs throw naming the field
 check("malformed: budget -5 throws naming budget", () => {
   assertThrowsNaming(
     () => buildConfig(base(), { budget: -5 }),
     "budget",
     "negative budget",
+  );
+});
+
+check("malformed: a negative or fractional budgetTopUp throws naming it", () => {
+  assertThrowsNaming(
+    () => buildConfig(base(), { budgetTopUp: -500 }),
+    "budgetTopUp",
+    "negative top-up",
+  );
+  assertThrowsNaming(
+    () => buildConfig(base(), { budgetTopUp: 12.5 }),
+    "budgetTopUp",
+    "fractional top-up",
   );
 });
 

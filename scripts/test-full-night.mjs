@@ -38,7 +38,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig, openBidFor, squadSize } from "../lib/config-core.mjs";
+import { buildConfig, openBidFor, squadSize, walletBudget } from "../lib/config-core.mjs";
 import { recordSale } from "../lib/draft-core.mjs";
 import { buildQueue, endPhaseOne, noBid, nominate } from "../lib/lot-core.mjs";
 import { deriveManager, isEligible } from "../lib/derive-core.mjs";
@@ -566,7 +566,7 @@ try {
       totalRaw === SIZE && POSITIONS.every((pos) => raw.fills[pos] === cfg.squad[pos]);
     if (!exactlyFull) allExactlyFull = false;
 
-    const withinBudget = raw.spend <= cfg.budget && cfg.budget - raw.spend >= 0;
+    const withinBudget = raw.spend <= walletBudget(cfg) && walletBudget(cfg) - raw.spend >= 0;
     if (!withinBudget) allWithinBudget = false;
 
     const agree =
@@ -574,7 +574,7 @@ try {
       inMemory.squadComplete === true &&
       payload &&
       payload.spent === raw.spend &&
-      payload.remaining === cfg.budget - raw.spend &&
+      payload.remaining === walletBudget(cfg) - raw.spend &&
       payload.squadComplete === true &&
       POSITIONS.every((pos) => inMemory.fills[pos] === raw.fills[pos]);
     if (!agree) {
@@ -628,14 +628,14 @@ try {
   console.log("\n=== FULL NIGHT SUMMARY ===");
   console.log(`players sold: ${total} (phase 1: ${phase1Sales}, phase 2: ${phase2Sales})`);
   console.log(`no-bids: ${phase1NoBids} (all in phase 1; every phase-2 nomination was awarded)`);
-  console.log(`total spend: $${totalSpend} across ${managers.length} managers (budget $${cfg.budget} each)`);
+  console.log(`total spend: $${totalSpend} across ${managers.length} managers (budget $${walletBudget(cfg)} each)`);
   for (const m of managers) {
     const raw = rawByManager.get(m.id);
     const totalRaw = POSITIONS.reduce((sum, pos) => sum + raw.fills[pos], 0);
     console.log(
       `  ${m.short} (slot ${m.slot}): ${totalRaw}/${SIZE} squad ` +
         `[${POSITIONS.map((p) => `${p} ${raw.fills[p]}/${cfg.squad[p]}`).join(", ")}], ` +
-        `$${raw.spend} spent, $${cfg.budget - raw.spend} remaining`,
+        `$${raw.spend} spent, $${walletBudget(cfg) - raw.spend} remaining`,
     );
   }
   console.log(`\nPASS ${passCount} / FAIL ${failCount}`);

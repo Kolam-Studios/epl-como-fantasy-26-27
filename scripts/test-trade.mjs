@@ -13,7 +13,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig } from "../lib/config-core.mjs";
+import { buildConfig, walletBudget } from "../lib/config-core.mjs";
 import { recordSale } from "../lib/draft-core.mjs";
 import { recordTrade } from "../lib/trade-core.mjs";
 import { buildStatePayload } from "../lib/state-core.mjs";
@@ -151,8 +151,8 @@ try {
   await sql`update app_state set paused = false, phase = 1, current_player_id = null where id = 1`;
 
   // Baseline derived numbers (proves the seam reads sales correctly pre-trade).
-  report("baseline: A remaining 2200 (owns $800)", (await remainingOf(A)) === cfg.budget - 800, `${await remainingOf(A)}`);
-  report("baseline: B remaining 2600 (owns $400)", (await remainingOf(B)) === cfg.budget - 400, `${await remainingOf(B)}`);
+  report(`baseline: A remaining $${walletBudget(cfg) - 800} (owns $800)`, (await remainingOf(A)) === walletBudget(cfg) - 800, `${await remainingOf(A)}`);
+  report(`baseline: B remaining $${walletBudget(cfg) - 400} (owns $400)`, (await remainingOf(B)) === walletBudget(cfg) - 400, `${await remainingOf(B)}`);
 
   // --- rejection cases (write nothing) ---------------------------------
   const vBefore = await version();
@@ -176,14 +176,14 @@ try {
   report("happy: trade recorded", t1.ok === true, t1.ok ? `tradeId ${t1.tradeId}` : t1.message);
   report("happy: version bumped exactly once", (await version()) === vBeforeTrade + 1, `${vBeforeTrade} -> ${await version()}`);
   // NO refund: A's auction spend ($800) is sunk. A only gets the $200 cash back
-  // (remaining 2200 + 200 = 2400). B keeps its auction spend ($400) and pays $200
-  // cash for the traded-in player (remaining 2600 - 200 = 2400); B does NOT inherit
+  // (remaining wallet-800 +200). B keeps its auction spend ($400) and pays $200
+  // cash for the traded-in player (wallet-400 -200); B does NOT inherit
   // the $500 salary. The $500 player moves to B; the money paid for it stays spent.
-  report("happy: A remaining 2400 (auction $800 sunk, +$200 cash back)", (await remainingOf(A)) === 2400, `${await remainingOf(A)}`);
-  report("happy: B remaining 2400 (auction $400 + $200 cash paid)", (await remainingOf(B)) === 2400, `${await remainingOf(B)}`);
-  report("happy: returned summary matches board (A)", t1.ok && t1.managerA.remaining === 2400, t1.ok ? `${t1.managerA.remaining}` : "-");
-  report("happy: returned summary matches board (B)", t1.ok && t1.managerB.remaining === 2400, t1.ok ? `${t1.managerB.remaining}` : "-");
-  report("happy: total remaining conserved (4800)", (await remainingOf(A)) + (await remainingOf(B)) === 4800, "");
+  report(`happy: A remaining ${walletBudget(cfg) - 600} (auction $800 sunk, +$200 cash back)`, (await remainingOf(A)) === walletBudget(cfg) - 600, `${await remainingOf(A)}`);
+  report(`happy: B remaining ${walletBudget(cfg) - 600} (auction $400 + $200 cash paid)`, (await remainingOf(B)) === walletBudget(cfg) - 600, `${await remainingOf(B)}`);
+  report("happy: returned summary matches board (A)", t1.ok && t1.managerA.remaining === walletBudget(cfg) - 600, t1.ok ? `${t1.managerA.remaining}` : "-");
+  report("happy: returned summary matches board (B)", t1.ok && t1.managerB.remaining === walletBudget(cfg) - 600, t1.ok ? `${t1.managerB.remaining}` : "-");
+  report(`happy: total remaining conserved (${2 * walletBudget(cfg) - 1200})`, (await remainingOf(A)) + (await remainingOf(B)) === 2 * walletBudget(cfg) - 1200, "");
   report("happy: player now owned by B", (await ownerOf(P_A_MID)) === B, `owner ${await ownerOf(P_A_MID)}`);
   const [{ n: legRows }] = await sql`select count(*)::int as n from trade_players where trade_id = ${t1.ok ? t1.tradeId : -1} and player_id = ${P_A_MID} and from_manager = ${A} and to_manager = ${B}`;
   report("happy: trade_players leg written (A -> B)", legRows === 1, `${legRows}`);
@@ -193,8 +193,8 @@ try {
   // --- reverse trade unwinds it (the v1 "undo a trade" mechanism) -------
   const t2 = await recordTrade(sql, cfg, { managerA: B, managerB: A, playersAToB: [P_A_MID], cashBToA: 200, reason: "reverse", actor: ACTOR });
   report("reverse: recorded", t2.ok === true, t2.ok ? "" : t2.message);
-  report("reverse: A back to 2200", (await remainingOf(A)) === 2200, `${await remainingOf(A)}`);
-  report("reverse: B back to 2600", (await remainingOf(B)) === 2600, `${await remainingOf(B)}`);
+  report(`reverse: A back to ${walletBudget(cfg) - 800}`, (await remainingOf(A)) === walletBudget(cfg) - 800, `${await remainingOf(A)}`);
+  report(`reverse: B back to ${walletBudget(cfg) - 400}`, (await remainingOf(B)) === walletBudget(cfg) - 400, `${await remainingOf(B)}`);
   report("reverse: player back with A", (await ownerOf(P_A_MID)) === A, `owner ${await ownerOf(P_A_MID)}`);
 
   // --- #15 regression: a traded-away player un-completes the giver ------

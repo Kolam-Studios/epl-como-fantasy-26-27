@@ -12,7 +12,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig, minOpenBid, openBidFor, squadSize } from "../lib/config-core.mjs";
+import { buildConfig, minOpenBid, openBidFor, squadSize, walletBudget } from "../lib/config-core.mjs";
 import { recordSale } from "../lib/draft-core.mjs";
 import { buildStatePayload } from "../lib/state-core.mjs";
 
@@ -230,7 +230,7 @@ try {
   );
 
   // Fresh manager: maxBid = budget - reserve * (squadSize - 1).
-  const expectedMaxBid = cfg.budget - reserve * (squadSize(cfg) - 1);
+  const expectedMaxBid = walletBudget(cfg) - reserve * (squadSize(cfg) - 1);
   const overMax = await recordSale(sql, cfg, {
     playerId: P_LOT1, managerId: managerIds[SLOT_MAXBID], price: expectedMaxBid + 1, actor: ACTOR,
   });

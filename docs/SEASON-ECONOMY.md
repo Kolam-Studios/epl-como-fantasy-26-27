@@ -24,6 +24,17 @@ The $500 waiver injection is $500 total for the whole window (not $500 per month
 
 All amounts are league config, never code.
 
+**A2 is live (8 Sep 2026).** `league.config.json` now carries `budgetTopUp`, the
+running total of injections granted since the auction, set to `500` for waiver
+window one. `walletBudget(cfg)` = `budget + budgetTopUp` is the season wallet;
+`deriveManager` measures remaining against it, so every live surface - the board
+strip, the ledger, max bid and the waiver form's bid cap - moved together in one
+change and no wallet is stored on a row. Because it is a running total, A3 raises
+it to `2500` and A4 to `3000`; it is never reset to the new grant alone. `budget`
+stays $3,000 (A1) so the auction record and the valuations model keep the number
+they were built around, and the Bid 1 archive is a frozen snapshot that still
+shows the auction-night wallets.
+
 ## Retention at the rebid (the deliberate squeeze)
 
 At auction two a manager may retain any player they own **at the price they

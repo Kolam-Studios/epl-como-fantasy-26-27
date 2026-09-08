@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
-import { buildConfig } from "../lib/config-core.mjs";
+import { buildConfig, walletBudget } from "../lib/config-core.mjs";
 import { backfillBidOne } from "../lib/period-core.mjs";
 import {
   foldToken,
@@ -80,7 +80,7 @@ try {
   // ---- context (step 1) -------------------------------------------------------
   let ctx = await waiverContext(sql, cfg, { managerId: mA.id, token: "Norway" });
   report("context: pair match", ctx.ok === true);
-  report("context: remaining derived", ctx.remaining === cfg.budget - 450, `got ${ctx.remaining}`);
+  report("context: remaining derived", ctx.remaining === walletBudget(cfg) - 450, `got ${ctx.remaining}`);
   report("context: squad listed", ctx.squad?.length === 3);
   report("context: no saved form yet", ctx.saved === null);
   ctx = await waiverContext(sql, cfg, { managerId: mA.id, token: "BRUNO" });
@@ -101,7 +101,7 @@ try {
   report("submit: $0 bid rejected", r.ok === false && r.code === "bad_amount");
   r = await submit({ managerId: mA.id, token: "norway", drops: [], bids: [{ playerId: freeMid.id, amount: 10.5 }] });
   report("submit: fractional bid rejected", r.ok === false && r.code === "bad_amount");
-  r = await submit({ managerId: mA.id, token: "norway", drops: [], bids: [{ playerId: freeMid.id, amount: cfg.budget }] });
+  r = await submit({ managerId: mA.id, token: "norway", drops: [], bids: [{ playerId: freeMid.id, amount: walletBudget(cfg) }] });
   report("submit: over-wallet bid rejected", r.ok === false && r.code === "over_cap");
   r = await submit({
     managerId: mA.id, token: "norway", drops: [],
@@ -120,7 +120,7 @@ try {
   r = await submit({
     managerId: mA.id, token: "norway",
     drops: [{ playerId: aMid1.id }],
-    bids: [{ playerId: freeMid.id, amount: cfg.budget - 450 }],
+    bids: [{ playerId: freeMid.id, amount: walletBudget(cfg) - 450 }],
   });
   report("submit: full-wallet bid allowed", r.ok === true, r.message);
 

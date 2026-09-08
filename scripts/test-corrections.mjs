@@ -11,7 +11,7 @@
 
 import { readFileSync } from "node:fs";
 import postgres from "postgres";
-import { buildConfig, openBidFor } from "../lib/config-core.mjs";
+import { buildConfig, openBidFor, walletBudget } from "../lib/config-core.mjs";
 import { editSale, undoLastSale, voidSale } from "../lib/corrections-core.mjs";
 
 const url = process.env.DATABASE_URL;
@@ -311,15 +311,29 @@ try {
   //            remaining 100 -> any path rejects.
   const now = new Date().toISOString();
   const editSaleId = await seedSale(P_EDIT, managerIds[SLOT_EDIT], 500, now);
-  const fillerPrices = [190, ...Array(editFillers.length - 1).fill(170)]; // 190 + 13*170 = 2400
+  // 14 fillers summing to walletBudget - 600 (the first absorbs the remainder).
+  const fillerTotal = walletBudget(cfg) - 600;
+  const fillerBase = Math.floor(fillerTotal / editFillers.length);
+  const fillerPrices = [
+    fillerTotal - fillerBase * (editFillers.length - 1),
+    ...Array(editFillers.length - 1).fill(fillerBase),
+  ];
   for (const [i, p] of editFillers.entries()) {
     await seedSale(p.id, managerIds[SLOT_EDIT], fillerPrices[i], now);
   }
   // Full FWD quota manager.
   for (const p of fwdFull) await seedSale(p.id, managerIds[SLOT_FWD_FULL], 5, now);
-  // Poor manager: 10 players, $2,960 spent, MID open. remaining 40,
-  // openSlots 5, maxBid = 40 - 5*4 = 20.
-  for (const p of poorFillers) await seedSale(p.id, managerIds[SLOT_POOR], 296, now);
+  // Poor manager: 10 players spending the whole wallet bar $40, MID left open,
+  // so remaining is $40 whatever the season wallet is (a post-auction top-up
+  // must not silently unconstrain this fixture). openSlots 5, so max bid is
+  // $40 - minOpenBid x 4.
+  const poorTotal = walletBudget(cfg) - 40;
+  const poorBase = Math.floor(poorTotal / poorFillers.length);
+  const poorPrices = [
+    poorTotal - poorBase * (poorFillers.length - 1),
+    ...Array(poorFillers.length - 1).fill(poorBase),
+  ];
+  for (const [i, p] of poorFillers.entries()) await seedSale(p.id, managerIds[SLOT_POOR], poorPrices[i], now);
   // Targets for the manager-change tests.
   const saleFwd = await seedSale(P_A, managerIds[SLOT_A], 50, now); // FWD tier 1
   const saleMid = await seedSale(P_B, managerIds[SLOT_B], 50, now); // MID tier 4

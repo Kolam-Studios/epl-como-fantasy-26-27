@@ -12,6 +12,7 @@
     "Manager 8"
   ],
   "budget": 3000,
+  "budgetTopUp": 500,
   "squad": { "GK": 2, "DEF": 5, "MID": 5, "FWD": 3 },
   "tiers": [
     { "tier": 1, "minFplPrice": 12.0, "openBid": 50 },
@@ -38,7 +39,8 @@
   ],
   "_notes": {
     "managers": "PUBLIC REPO: placeholder names only. Put the real 26/27 roster in a gitignored league.config.local.json (same shape) on the machine running the draft; it is deep-merged over this file at runtime (arrays replace wholesale). Manager count derives from the array length.",
-    "budget": "Auction dollars per manager for the whole draft.",
+    "budget": "Auction dollars per manager at the August auction. This is the AUCTION number and does not move: the Bid 1 record, the archived wallets and the valuations model are all built around it.",
+    "budgetTopUp": "The RUNNING TOTAL of cash injections granted since the auction (docs/SEASON-ECONOMY.md: A2 = $500 for waiver window one, A3 = $2,000 at the February rebid, A4 = $500 for waiver window two). Whole dollars, optional; 0 or absent = no injection. Every LIVE derivation reads budget + budgetTopUp - spend, so remaining, max bid and the waiver bid cap all move together. Currently 500: window one's injection, which is $500 for the WHOLE window (Waivers 1-3), not $500 per period - so a manager who finished the auction on $374 goes into Waiver 1 with $874 and carries whatever is left through to the rebid. Because it is a running total, the next grant RAISES this number (500 -> 2500 at the rebid, -> 3000 for window two); never reset it to the new grant alone. `budget` stays the August auction's $3,000, and closed periods are frozen snapshots that never recompute, so the Bid 1 archive still shows the auction-night wallets.",
     "squad": "Slots per position each manager must fill; squad size derives from the sum. Position keys map to FPL element_type: GK=1, DEF=2, MID=3, FWD=4.",
     "tiers": "Ordered highest minFplPrice first. A player's tier is the first band whose minFplPrice <= the player's FPL price; the last band must have minFplPrice 0 so every player lands somewhere. openBid is the minimum opening bid for that tier; the lowest tier's openBid is the league-wide reserve (min open). A tier with phase2Only:true is never offered in phase 1 - its players are bid for by nomination in phase 2 only (Tier 5, the $1 cheap band).",
     "bidIncrement": "null = voice bidding, no enforced increment in v1. Set a number to enforce a minimum raise.",
